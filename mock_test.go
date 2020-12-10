@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/go-redis/redis/v8"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"testing"
-	"time"
 )
 
 func TestRedisMock(t *testing.T) {
@@ -42,10 +43,6 @@ var _ = Describe("RedisMock", func() {
 			mock.ExpectSet("set_key", "set value", 1*time.Minute).SetVal("OK")
 
 			pipe = client.Pipeline()
-		})
-
-		It("xx", func() {
-			client.Get(ctx, "news_info_")
 		})
 
 		It("pipeline order", func() {

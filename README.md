@@ -1,8 +1,18 @@
 # Redis client Mock
 
+Provide mock test for redis query, Compatible with github.com/go-redis/redis/v8
+
+## Install
+
+Confirm that you are using redis.Client the version is github.com/go-redis/redis/v8
+
+```go
+go get github.com/go-redis/redismock/v8
+```
+
 ## Example
 
-More examples: https://github.com/go-redis/redismock/blob/master/example.go
+More examples: https://github.com/go-redis/redismock/blob/v8/example.go
 
 ```go
 
