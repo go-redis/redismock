@@ -4,7 +4,7 @@ Provide mock test for redis query, Compatible with github.com/go-redis/redis/v7
 
 ## Install
 
-Confirm that you are using redis.Client the version is github.com/go -redis/redis/v7
+Confirm that you are using redis.Client the version is github.com/go-redis/redis/v7
 
 ```go
 go get github.com/go-redis/redismock/v7
@@ -12,7 +12,7 @@ go get github.com/go-redis/redismock/v7
 
 ## Example
 
-More examples: https://github.com/go-redis/redismock/blob/v7/example.go
+More examples: https://github.com/go-redis/redismock/blob/v7/example/example.go
 
 ```go
 
