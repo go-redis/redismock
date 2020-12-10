@@ -12,7 +12,7 @@ go get github.com/go-redis/redismock/v8
 
 ## Example
 
-More examples: https://github.com/go-redis/redismock/blob/v8/example.go
+More examples: https://github.com/go-redis/redismock/blob/v8/example/example.go
 
 ```go
 
