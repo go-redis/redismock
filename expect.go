@@ -7,7 +7,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v7"
 )
 
 type ClientMock interface {
@@ -72,7 +72,6 @@ type ClientMock interface {
 	ExpectMSet(values ...interface{}) *ExpectedStatus
 	ExpectMSetNX(values ...interface{}) *ExpectedBool
 	ExpectSet(key string, value interface{}, expiration time.Duration) *ExpectedStatus
-	ExpectSetEX(key string, value interface{}, expiration time.Duration) *ExpectedStatus
 	ExpectSetNX(key string, value interface{}, expiration time.Duration) *ExpectedBool
 	ExpectSetXX(key string, value interface{}, expiration time.Duration) *ExpectedBool
 	ExpectSetRange(key string, offset int64, value string) *ExpectedInt
@@ -116,8 +115,6 @@ type ClientMock interface {
 	ExpectLInsertAfter(key string, pivot, value interface{}) *ExpectedInt
 	ExpectLLen(key string) *ExpectedInt
 	ExpectLPop(key string) *ExpectedString
-	ExpectLPos(key string, value string, args redis.LPosArgs) *ExpectedInt
-	ExpectLPosCount(key string, value string, count int64, args redis.LPosArgs) *ExpectedIntSlice
 	ExpectLPush(key string, values ...interface{}) *ExpectedInt
 	ExpectLPushX(key string, values ...interface{}) *ExpectedInt
 	ExpectLRange(key string, start, stop int64) *ExpectedStringSlice
@@ -170,7 +167,6 @@ type ClientMock interface {
 	ExpectXTrim(key string, maxLen int64) *ExpectedInt
 	ExpectXTrimApprox(key string, maxLen int64) *ExpectedInt
 	ExpectXInfoGroups(key string) *ExpectedXInfoGroups
-	ExpectXInfoStream(key string) *ExpectedXInfoStream
 
 	ExpectBZPopMax(timeout time.Duration, keys ...string) *ExpectedZWithKey
 	ExpectBZPopMin(timeout time.Duration, keys ...string) *ExpectedZWithKey
@@ -704,34 +700,16 @@ func (cmd *ExpectedXPendingExt) inflow(c redis.Cmder) {
 type ExpectedXInfoGroups struct {
 	expectedBase
 
-	val []redis.XInfoGroup
+	val []redis.XInfoGroups
 }
 
-func (cmd *ExpectedXInfoGroups) SetVal(val []redis.XInfoGroup) {
+func (cmd *ExpectedXInfoGroups) SetVal(val []redis.XInfoGroups) {
 	cmd.setVal = true
-	cmd.val = make([]redis.XInfoGroup, len(val))
+	cmd.val = make([]redis.XInfoGroups, len(val))
 	copy(cmd.val, val)
 }
 
 func (cmd *ExpectedXInfoGroups) inflow(c redis.Cmder) {
-	inflow(c, "val", cmd.val)
-}
-
-//--------------------
-
-type ExpectedXInfoStream struct {
-	expectedBase
-
-	val *redis.XInfoStream
-}
-
-func (cmd *ExpectedXInfoStream) SetVal(val *redis.XInfoStream) {
-	cmd.setVal = true
-	v := *val
-	cmd.val = &v
-}
-
-func (cmd *ExpectedXInfoStream) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 

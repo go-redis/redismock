@@ -1,17 +1,14 @@
 package example
 
 import (
-	"context"
 	"errors"
-	"github.com/go-redis/redismock/v8"
+	"github.com/go-redis/redismock/v7"
 	"time"
 )
 
 var _ = example
 
 func example() {
-	var ctx = context.TODO()
-
 	// get redis.Client and mock
 	db, mock := redismock.NewClientMock()
 
@@ -23,19 +20,19 @@ func example() {
 
 	//hget command return error
 	mock.ExpectHGet("key", "field").SetErr(errors.New("error"))
-	//db.HGet(ctx, "key", "field").Err() == errors.New("error")
+	//db.HGet("key", "field").Err() == errors.New("error")
 
 	//hget command return value
 	mock.ExpectHGet("key", "field").SetVal("test value")
-	//db.HGet(ctx, "key", "field").Val() == "test value"
+	//db.HGet("key", "field").Val() == "test value"
 
 	//hget command return redis.Nil
 	mock.ExpectHGet("key", "field").RedisNil()
-	//db.HGet(ctx, "key", "field").Err() == redis.Nil
+	//db.HGet("key", "field").Err() == redis.Nil
 
 	//hget command... do not set return
 	mock.ExpectHGet("key", "field")
-	//db.HGet(ctx, "key", "field").Err() != nil
+	//db.HGet("key", "field").Err() != nil
 
 	//------------
 
@@ -45,7 +42,7 @@ func example() {
 
 	//regular, uncertain value
 
-	db.HSet(ctx, "key", "field", time.Now().Unix())
+	db.HSet("key", "field", time.Now().Unix())
 	mock.Regexp().ExpectHSet("key", "field", `^[0-9]+$`).SetVal(1)
 
 	//------------
@@ -78,9 +75,9 @@ func example() {
 	mock.ExpectHGet("hash-get", "hash-field").SetVal("hash-value")
 
 	//3-1-2
-	_ = db.HGet(ctx, "hash-get", "hash-field")
-	_ = db.Get(ctx, "key")
-	_ = db.Set(ctx, "set-key", "set-value", 1)
+	_ = db.HGet("hash-get", "hash-field")
+	_ = db.Get("key")
+	_ = db.Set("set-key", "set-value", 1)
 
 	//--------------
 
@@ -89,7 +86,7 @@ func example() {
 	mock.ExpectSet("key", "value", 1).SetVal("OK")
 
 	pipe := db.Pipeline()
-	_ = pipe.Get(ctx, "key")
-	_ = pipe.Set(ctx, "key", "value", 1)
-	_, _ = pipe.Exec(ctx)
+	_ = pipe.Get("key")
+	_ = pipe.Set("key", "value", 1)
+	_, _ = pipe.Exec()
 }

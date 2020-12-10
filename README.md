@@ -1,20 +1,28 @@
 # Redis client Mock
 
+Provide mock test for redis query, Compatible with github.com/go-redis/redis/v7
+
+## Install
+
+Confirm that you are using redis.Client the version is github.com/go -redis/redis/v7
+
+```go
+go get github.com/go-redis/redismock/v7
+```
+
 ## Example
 
-More examples: https://github.com/go-redis/redismock/blob/master/example.go
+More examples: https://github.com/go-redis/redismock/blob/v7/example.go
 
 ```go
 
-var ctx = context.TODO()
-
 func NewsInfoForCache(redisDB *redis.Client, newsID int) (info string, err error) {
 	cacheKey := fmt.Sprintf("news_redis_cache_%d", newsID)
-	info, err = redisDB.Get(ctx, cacheKey).Result()
+	info, err = redisDB.Get(cacheKey).Result()
 	if err == redis.Nil {
 		// info, err = call api()
 		info = "test"
-		err = redisDB.Set(ctx, cacheKey, info, 30 * time.Minute).Err()
+		err = redisDB.Set(cacheKey, info, 30 * time.Minute).Err()
 	}
 	return
 }
