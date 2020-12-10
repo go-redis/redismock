@@ -353,10 +353,11 @@ var _ = Describe("RedisMock", func() {
 		})
 
 		It("ExpireAt", func() {
+			now := time.Now()
 			operationBoolCmd(mock, func() *ExpectedBool {
-				return mock.ExpectExpireAt("key", time.Now())
+				return mock.ExpectExpireAt("key", now.Add(20 * time.Minute))
 			}, func() *redis.BoolCmd {
-				return client.ExpireAt(ctx, "key", time.Now())
+				return client.ExpireAt(ctx, "key", now.Add(20 * time.Minute))
 			})
 		})
 
@@ -425,10 +426,11 @@ var _ = Describe("RedisMock", func() {
 		})
 
 		It("PExpireAt", func() {
+			now := time.Now()
 			operationBoolCmd(mock, func() *ExpectedBool {
-				return mock.ExpectPExpireAt("key", time.Now())
+				return mock.ExpectPExpireAt("key", now.Add(10 * time.Minute))
 			}, func() *redis.BoolCmd {
-				return client.PExpireAt(ctx, "key", time.Now())
+				return client.PExpireAt(ctx, "key", now.Add(10 * time.Minute))
 			})
 		})
 
