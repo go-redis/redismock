@@ -89,4 +89,18 @@ func example() {
 	_ = pipe.Get("key")
 	_ = pipe.Set("key", "value", 1)
 	_, _ = pipe.Exec()
+
+	//---------------------
+	mock.ClearExpect()
+
+	//TxPipeline
+	mock.ExpectTxPipeline()
+	mock.ExpectGet("key").SetVal("value")
+	mock.ExpectSet("key", "value", 1).SetVal("OK")
+	mock.ExpectTxPipelineExec()
+
+	pipe = db.TxPipeline()
+	_ = pipe.Get("key")
+	_ = pipe.Set("key", "value", 1)
+	_, _ = pipe.Exec()
 }

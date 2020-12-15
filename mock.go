@@ -246,6 +246,21 @@ func (m *mock) MatchExpectationsInOrder(b bool) {
 	m.strictOrder = b
 }
 
+func (m *mock) ExpectTxPipeline() {
+	e := &ExpectedStatus{}
+	e.cmd = redis.NewStatusCmd("multi")
+	e.SetVal("OK")
+	m.pushExpect(e)
+}
+
+func (m *mock) ExpectTxPipelineExec() *ExpectedSlice {
+	e := &ExpectedSlice{}
+	e.cmd = redis.NewSliceCmd("exec")
+	e.SetVal(nil)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectCommand() *ExpectedCommandsInfo {
 	e := &ExpectedCommandsInfo{}
 	e.cmd = m.factory.Command()

@@ -31,6 +31,58 @@ var _ = Describe("RedisMock", func() {
 		Expect(mock.ExpectationsWereMet()).NotTo(HaveOccurred())
 	})
 
+	Describe("tx pipeline", func() {
+		var pipe redis.Pipeliner
+
+		BeforeEach(func() {
+			mock.ExpectTxPipeline()
+			mock.ExpectGet("key1").SetVal("pipeline get")
+			mock.ExpectHGet("hash_key", "hash_field").SetVal("pipeline hash get")
+			mock.ExpectSet("set_key", "set value", 1*time.Minute).SetVal("OK")
+			mock.ExpectTxPipelineExec()
+
+			pipe = client.TxPipeline()
+		})
+
+		It("tx pipeline order", func() {
+			get := pipe.Get("key1")
+			hashGet := pipe.HGet("hash_key", "hash_field")
+			set := pipe.Set("set_key", "set value", 1*time.Minute)
+
+			_, err := pipe.Exec()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(get.Err()).NotTo(HaveOccurred())
+			Expect(get.Val()).To(Equal("pipeline get"))
+
+			Expect(hashGet.Err()).NotTo(HaveOccurred())
+			Expect(hashGet.Val()).To(Equal("pipeline hash get"))
+
+			Expect(set.Err()).NotTo(HaveOccurred())
+			Expect(set.Val()).To(Equal("OK"))
+		})
+
+		It("tx pipeline not order", func() {
+			mock.MatchExpectationsInOrder(false)
+
+			hashGet := pipe.HGet("hash_key", "hash_field")
+			set := pipe.Set("set_key", "set value", 1*time.Minute)
+			get := pipe.Get("key1")
+
+			_, err := pipe.Exec()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(get.Err()).NotTo(HaveOccurred())
+			Expect(get.Val()).To(Equal("pipeline get"))
+
+			Expect(hashGet.Err()).NotTo(HaveOccurred())
+			Expect(hashGet.Val()).To(Equal("pipeline hash get"))
+
+			Expect(set.Err()).NotTo(HaveOccurred())
+			Expect(set.Val()).To(Equal("OK"))
+		})
+	})
+
 	Describe("pipeline", func() {
 		var pipe redis.Pipeliner
 
