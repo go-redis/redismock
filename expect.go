@@ -318,8 +318,8 @@ type expectation interface {
 
 	isSetVal() bool
 
-	Lock()
-	Unlock()
+	lock()
+	unlock()
 }
 
 type CustomMatch func(expected, actual []interface{}) error
@@ -333,7 +333,15 @@ type expectedBase struct {
 	regexpMatch bool
 	customMatch CustomMatch
 
-	sync.RWMutex
+	rw sync.RWMutex
+}
+
+func (base *expectedBase) lock() {
+	base.rw.Lock()
+}
+
+func (base *expectedBase) unlock() {
+	base.rw.Unlock()
 }
 
 func (base *expectedBase) regexp() bool {

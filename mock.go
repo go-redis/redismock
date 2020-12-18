@@ -73,11 +73,11 @@ func (m *mock) process(cmd redis.Cmder) (err error) {
 	var expect expectation = nil
 
 	for _, e := range m.expected {
-		e.Lock()
+		e.lock()
 
 		// not available, has been matched
 		if !e.usable() {
-			e.Unlock()
+			e.unlock()
 			miss++
 			continue
 		}
@@ -92,11 +92,11 @@ func (m *mock) process(cmd redis.Cmder) (err error) {
 
 		// strict order of command execution
 		if m.strictOrder {
-			e.Unlock()
+			e.unlock()
 			cmd.SetErr(err)
 			return err
 		}
-		e.Unlock()
+		e.unlock()
 	}
 
 	if expect == nil {
@@ -109,7 +109,7 @@ func (m *mock) process(cmd redis.Cmder) (err error) {
 		return err
 	}
 
-	defer expect.Unlock()
+	defer expect.unlock()
 
 	expect.trigger()
 
@@ -227,9 +227,9 @@ func (m *mock) ExpectationsWereMet() error {
 		return m.ExpectationsWereMet()
 	}
 	for _, e := range m.expected {
-		e.Lock()
+		e.lock()
 		usable := e.usable()
-		e.Unlock()
+		e.unlock()
 
 		if usable {
 			return fmt.Errorf("there is a remaining expectation which was not matched: %+v", e.args())
