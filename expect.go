@@ -30,6 +30,8 @@ type ClientMock interface {
 	ExpectTxPipeline()
 	ExpectTxPipelineExec() *ExpectedSlice
 
+	ExpectWatch(keys ...string)
+
 	ExpectCommand() *ExpectedCommandsInfo
 	ExpectClientGetName() *ExpectedString
 	ExpectEcho(message interface{}) *ExpectedString

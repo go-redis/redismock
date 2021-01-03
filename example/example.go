@@ -106,4 +106,9 @@ func example() {
 	_ = pipe.Get(ctx, "key")
 	_ = pipe.Set(ctx, "key", "value", 1)
 	_, _ = pipe.Exec(ctx)
+
+	// Watch
+	mock.ExpectWatch("key1", "key2")
+	mock.ExpectGet("key1").SetVal("1")
+	mock.ExpectSet("key2", "2", 1).SetVal("OK")
 }
