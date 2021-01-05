@@ -138,6 +138,72 @@ var _ = Describe("RedisMock", func() {
 		})
 	})
 
+	Describe("watch", func() {
+		BeforeEach(func() {
+			mock.ExpectWatch("key1", "key2")
+			mock.ExpectGet("key1").SetVal("1")
+			mock.ExpectSet("key2", "2", 1*time.Second).SetVal("OK")
+		})
+
+		It("watch error", func() {
+			mock.MatchExpectationsInOrder(false)
+			txf := func(tx *redis.Tx) error {
+				_ = tx.Get(ctx, "key1")
+				_ = tx.Set(ctx, "key2", "2", 1*time.Second)
+				return errors.New("watch tx error")
+			}
+
+			err := client.Watch(ctx, txf, "key1", "key2")
+			Expect(err).To(Equal(errors.New("watch tx error")))
+
+			mock.ExpectWatch("key3", "key4").SetErr(errors.New("watch error"))
+			txf = func(tx *redis.Tx) error {
+				return nil
+			}
+
+			err = client.Watch(ctx, txf, "key3", "key4")
+			Expect(err).To(Equal(errors.New("watch error")))
+		})
+
+		It("watch in order", func() {
+			mock.MatchExpectationsInOrder(true)
+			txf := func(tx *redis.Tx) error {
+				val, err := tx.Get(ctx, "key1").Int64()
+				if err != nil {
+					return err
+				}
+				Expect(val).To(Equal(int64(1)))
+				err = tx.Set(ctx, "key2", "2", 1*time.Second).Err()
+				if err != nil {
+					return err
+				}
+				return nil
+			}
+
+			err := client.Watch(ctx, txf, "key1", "key2")
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("watch out of order", func() {
+			mock.MatchExpectationsInOrder(false)
+			txf := func(tx *redis.Tx) error {
+				err := tx.Set(ctx, "key2", "2", 1*time.Second).Err()
+				if err != nil {
+					return err
+				}
+				val, err := tx.Get(ctx, "key1").Int64()
+				if err != nil {
+					return err
+				}
+				Expect(val).To(Equal(int64(1)))
+				return nil
+			}
+
+			err := client.Watch(ctx, txf, "key1", "key2")
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
 	Describe("work order", func() {
 
 		BeforeEach(func() {
