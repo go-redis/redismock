@@ -103,4 +103,16 @@ func example() {
 	_ = pipe.Get("key")
 	_ = pipe.Set("key", "value", 1)
 	_, _ = pipe.Exec()
+
+	//Watch
+	mock.ExpectWatch("key1", "key2").SetErr(errors.New("watch error"))
+	mock.ExpectGet("key1").SetVal("1")
+	mock.ExpectSet("key2", "2", 1*time.Second).SetVal("OK")
+
+	//err := db.Watch(func(tx *redis.Tx) error {
+	//	tx.Get("key1")
+	//	tx.Set("key2", "2", 1 * time.Second)
+	//	return nil
+	//}, "key1", "key2")
+	//reflect.DeepEqual(err, errors.New("watch error"))
 }

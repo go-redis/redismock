@@ -30,6 +30,8 @@ type ClientMock interface {
 	ExpectTxPipeline()
 	ExpectTxPipelineExec() *ExpectedSlice
 
+	ExpectWatch(keys ...string) *ExpectedError
+
 	ExpectCommand() *ExpectedCommandsInfo
 	ExpectClientGetName() *ExpectedString
 	ExpectEcho(message interface{}) *ExpectedString
@@ -885,3 +887,11 @@ func (cmd *ExpectedGeoLocation) SetVal(val []redis.GeoLocation) {
 func (cmd *ExpectedGeoLocation) inflow(c redis.Cmder) {
 	inflow(c, "locations", cmd.locations)
 }
+
+//----------------------
+
+type ExpectedError struct {
+	expectedBase
+}
+
+func (cmd *ExpectedError) inflow(_ redis.Cmder) {}

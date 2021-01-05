@@ -261,6 +261,19 @@ func (m *mock) ExpectTxPipelineExec() *ExpectedSlice {
 	return e
 }
 
+func (m *mock) ExpectWatch(keys ...string) *ExpectedError {
+	e := &ExpectedError{}
+	args := make([]interface{}, 1+len(keys))
+	args[0] = "watch"
+	for i, key := range keys {
+		args[1+i] = key
+	}
+	e.cmd = redis.NewStatusCmd(args...)
+	e.setVal = true
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectCommand() *ExpectedCommandsInfo {
 	e := &ExpectedCommandsInfo{}
 	e.cmd = m.factory.Command()
