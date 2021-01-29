@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v7"
@@ -156,26 +157,114 @@ func (m *mock) match(expect expectation, cmd redis.Cmder) error {
 		return fn(expectArgs, cmdArgs)
 	}
 
-	for i := 0; i < len(expectArgs); i++ {
-		expr, ok := expectArgs[i].(string)
+	isMapArgs := m.mapArgs(cmd.Name(), &cmdArgs)
+	if isMapArgs {
+		m.mapArgs(expect.name(), &expectArgs)
+	}
 
-		// regular
-		if expect.regexp() && ok {
-			cmdValue := fmt.Sprint(cmdArgs[i])
-			re, err := regexp.Compile(expr)
-			if err != nil {
-				return err
+	for i := 0; i < len(expectArgs); i++ {
+		// is map?
+		if isMapArgs {
+			expectMapArgs, expectOK := expectArgs[i].(map[string]interface{})
+			cmdMapArgs, cmdOK := cmdArgs[i].(map[string]interface{})
+			if expectOK && cmdOK {
+				// there may be the same key
+				if len(expectMapArgs) != len(cmdMapArgs) {
+					return fmt.Errorf("wrong number of arguments, expectation regular: '%+v', but gave: '%+v'",
+						expectArgs, cmdArgs)
+				}
+				for expectKey, expectMapVal := range expectMapArgs {
+					cmdMapVal, ok := cmdMapArgs[expectKey]
+					if !ok {
+						return fmt.Errorf("missing command(%s) parameters: %s", expect.name(), expectKey)
+					}
+					if err := m.compare(expect.regexp(), expectMapVal, cmdMapVal); err != nil {
+						return err
+					}
+				}
+				continue
 			}
-			if !re.MatchString(cmdValue) {
-				return fmt.Errorf("%d column does not match, expectation regular: '%s', but gave: '%s'", i, expr, cmdValue)
-			}
-		} else if !reflect.DeepEqual(expectArgs[i], cmdArgs[i]) {
-			return fmt.Errorf("%d column does not `DeepEqual`, expectation: '%+v', but gave: '%+v'",
-				i, expectArgs[i], cmdArgs[i])
+		}
+		if err := m.compare(expect.regexp(), expectArgs[i], cmdArgs[i]); err != nil {
+			return err
 		}
 	}
 
 	return nil
+}
+
+func (m *mock) compare(isRegexp bool, expect, cmd interface{}) error {
+	expr, ok := expect.(string)
+	if isRegexp && ok {
+		cmdValue := fmt.Sprint(cmd)
+		re, err := regexp.Compile(expr)
+		if err != nil {
+			return err
+		}
+		if !re.MatchString(cmdValue) {
+			return fmt.Errorf("args not match, expectation regular: '%s', but gave: '%s'", expr, cmdValue)
+		}
+	} else if !reflect.DeepEqual(expect, cmd) {
+		return fmt.Errorf("args not `DeepEqual`, expectation: '%+v', but gave: '%+v'", expect, cmd)
+	}
+	return nil
+}
+
+// using map in command leads to disorder, change the command parameter to map[string]interface{}
+// for example:
+//	[mset key1 value1 key2 value2] => [mset map[string]interface{}{"key1": "value1", "key2": "value2"}]
+// return bool, is it handled
+func (m *mock) mapArgs(cmd string, cmdArgs *[]interface{}) bool {
+	var cut int
+	cmd = strings.ToLower(cmd)
+	switch cmd {
+	case "mset", "msetnx":
+		// 1
+		cut = 1
+	case "hset", "hmset":
+		// 2
+		cut = 2
+	case "eval", "evalsha":
+		// more, i guess nobody uses it (eval/evalsha), miss
+		return false
+	default:
+		return false
+	}
+
+	if n := len(*cmdArgs); n <= cut || (n > (cut+1) && (n-cut)%2 != 0) {
+		return false
+	}
+
+	mapArgs := make(map[string]interface{})
+	args := (*cmdArgs)[cut:]
+	switch v := args[0].(type) {
+	//[]string and map[string]interface{}, types will not appear normally
+	case []string:
+		if len(v)%2 != 0 {
+			return false
+		}
+		for i := 0; i < len(v); i += 2 {
+			mapArgs[v[i]] = v[i+1]
+		}
+	case map[string]interface{}:
+		if len(v) > 0 {
+			mapArgs = v
+		}
+	default:
+		for i := 0; i < len(args); i += 2 {
+			mapArgs[fmt.Sprint(args[i])] = args[i+1]
+		}
+	}
+
+	if len(mapArgs) == 0 {
+		return false
+	}
+
+	newCmd := make([]interface{}, cut, cut+1)
+	copy(newCmd[:cut], (*cmdArgs)[:cut])
+	newCmd = append(newCmd, mapArgs)
+	*cmdArgs = newCmd
+	return true
 }
 
 func (m *mock) pushExpect(e expectation) {
