@@ -21,12 +21,21 @@ var _ = Describe("RedisMock", func() {
 	ctx := context.TODO()
 
 	var (
-		client *redis.Client
-		mock   ClientMock
+		client   *redis.Client
+		mock     ClientMock
+		disorder func() map[string]interface{}
 	)
 
 	BeforeEach(func() {
 		client, mock = NewClientMock()
+		disorder = func() map[string]interface{} {
+			d := make(map[string]interface{})
+			for i := 0; i < 16; i++ {
+				k, v := fmt.Sprintf("key-%d", i), fmt.Sprintf("value-%d", i)
+				d[k] = v
+			}
+			return d
+		}
 	})
 
 	AfterEach(func() {
@@ -756,12 +765,36 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("MSet Map", func() {
+			mock.ExpectMSet(disorder()).SetVal("OK")
+			res, err := client.MSet(ctx, disorder()).Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(Equal("OK"))
+
+			mock.ExpectMSet("key1", "value1", "key2", "value2").SetVal("OK")
+			res, err = client.MSet(ctx, "key2", "value2", "key1", "value1").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(Equal("OK"))
+		})
+
 		It("MSetNX", func() {
 			operationBoolCmd(mock, func() *ExpectedBool {
 				return mock.ExpectMSetNX()
 			}, func() *redis.BoolCmd {
 				return client.MSetNX(ctx)
 			})
+		})
+
+		It("MSetNX Map", func() {
+			mock.ExpectMSetNX(disorder()).SetVal(true)
+			res, err := client.MSetNX(ctx, disorder()).Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(BeTrue())
+
+			mock.ExpectMSetNX("key1", "value1", "key2", "value2").SetVal(true)
+			res, err = client.MSetNX(ctx, "key2", "value2", "key1", "value1").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(BeTrue())
 		})
 
 		It("Set", func() {
@@ -1002,12 +1035,36 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("HSet Map", func() {
+			mock.ExpectHSet("key", disorder()).SetVal(1)
+			res, err := client.HSet(ctx, "key", disorder()).Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(Equal(int64(1)))
+
+			mock.ExpectHSet("key", "key1", "value1", "key2", "value2").SetVal(1)
+			res, err = client.HSet(ctx, "key", "key2", "value2", "key1", "value1").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(Equal(int64(1)))
+		})
+
 		It("HMSet", func() {
 			operationBoolCmd(mock, func() *ExpectedBool {
 				return mock.ExpectHMSet("key", "field1", "value1", "field2", "value2")
 			}, func() *redis.BoolCmd {
 				return client.HMSet(ctx, "key", "field1", "value1", "field2", "value2")
 			})
+		})
+
+		It("HMSet Map", func() {
+			mock.ExpectHMSet("key", disorder()).SetVal(true)
+			res, err := client.HMSet(ctx, "key", disorder()).Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(BeTrue())
+
+			mock.ExpectHMSet("key", "key1", "value1", "key2", "value2").SetVal(true)
+			res, err = client.HMSet(ctx, "key", "key2", "value2", "key1", "value1").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(BeTrue())
 		})
 
 		It("HSetNX", func() {
