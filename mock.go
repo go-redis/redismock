@@ -2,6 +2,7 @@ package redismock
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -15,9 +16,9 @@ type mock struct {
 	ctx context.Context
 
 	parent *mock
-	client *redis.Client
 
-	factory  *redis.Client
+	factory  redis.Cmdable
+	client   redis.Cmdable
 	expected []expectation
 
 	strictOrder bool
@@ -26,44 +27,88 @@ type mock struct {
 	expectCustom CustomMatch
 }
 
+const (
+	redisClient = iota
+	redisCluster
+)
+
+var hookError = errors.New("hook error")
+
 func NewClientMock() (*redis.Client, ClientMock) {
-	opt := &redis.Options{
-		// set -2, avoid executing commands on the redis server
-		MaxRetries: -2,
-	}
+	m := newMock(redisClient)
+	return m.client.(*redis.Client), m
+}
+
+func NewClusterMock() (*redis.ClusterClient, ClusterClientMock) {
+	m := newMock(redisCluster)
+	return m.client.(*redis.ClusterClient), m
+}
+
+func newMock(clientType int) *mock {
 	m := &mock{
-		ctx:     context.Background(),
-		client:  redis.NewClient(opt),
-		factory: redis.NewClient(opt),
+		ctx: context.Background(),
 	}
-	m.client.AddHook(redisClientHook(m.process))
+
+	// MaxRetries/MaxRedirects set -2, avoid executing commands on the redis server
+	switch clientType {
+	case redisClient:
+		opt := &redis.Options{MaxRetries: -2}
+		m.factory = redis.NewClient(opt)
+		client := redis.NewClient(opt)
+		client.AddHook(redisClientHook{fn: m.process})
+		m.client = client
+	case redisCluster:
+		opt := &redis.ClusterOptions{MaxRedirects: -2}
+		m.factory = redis.NewClusterClient(opt)
+		clusterClient := redis.NewClusterClient(opt)
+		clusterClient.AddHook(redisClientHook{fn: m.process, returnErr: hookError})
+		m.client = clusterClient
+	}
 	m.strictOrder = true
 
-	return m.client, m
+	return m
 }
 
 //----------------------------------
 
-type redisClientHook func(cmd redis.Cmder) error
-
-func (fh redisClientHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
-	return ctx, fh(cmd)
+type redisClientHook struct {
+	returnErr error
+	fn        func(cmd redis.Cmder) error
 }
 
-func (fh redisClientHook) AfterProcess(_ context.Context, _ redis.Cmder) error {
+func (h redisClientHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
+	err := h.fn(cmd)
+	if h.returnErr != nil && (err == nil || cmd.Err() == nil) {
+		err = h.returnErr
+	}
+	return ctx, err
+}
+
+func (h redisClientHook) AfterProcess(_ context.Context, cmd redis.Cmder) error {
+	if h.returnErr != nil && cmd.Err() == h.returnErr {
+		cmd.SetErr(nil)
+	}
 	return nil
 }
 
-func (fh redisClientHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
+func (h redisClientHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
 	for _, cmd := range cmds {
-		if err := fh(cmd); err != nil {
+		if err := h.fn(cmd); err != nil {
 			return ctx, err
 		}
 	}
-	return ctx, nil
+	return ctx, h.returnErr
 }
 
-func (fh redisClientHook) AfterProcessPipeline(_ context.Context, _ []redis.Cmder) error {
+func (h redisClientHook) AfterProcessPipeline(_ context.Context, cmds []redis.Cmder) error {
+	if h.returnErr == nil {
+		return nil
+	}
+	for _, cmd := range cmds {
+		if cmd.Err() == h.returnErr {
+			cmd.SetErr(nil)
+		}
+	}
 	return nil
 }
 

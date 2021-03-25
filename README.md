@@ -10,12 +10,10 @@ Confirm that you are using redis.Client the version is github.com/go-redis/redis
 go get github.com/go-redis/redismock/v8
 ```
 
-## Example
+## Quick Start
 
-More examples: https://github.com/go-redis/redismock/blob/v8/example/example.go
-
+RedisClient
 ```go
-
 var ctx = context.TODO()
 
 func NewsInfoForCache(redisDB *redis.Client, newsID int) (info string, err error) {
@@ -50,3 +48,22 @@ func TestNewsInfoForCache(t *testing.T) {
 	}
 }
 ```
+
+RedisCluster
+```go
+clusterClient, clusterMock := redismock.NewClusterMock()
+```
+
+## Unsupported Command
+
+RedisClient:
+
+- `Subscribe` / `PSubscribe`
+
+
+RedisCluster
+
+- `Subscribe` / `PSubscribe`
+- `Pipeline` / `TxPipeline`
+- `Watch`
+- `DBSize`

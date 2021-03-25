@@ -10,7 +10,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-type ClientMock interface {
+type baseMock interface {
 	// ClearExpect clear whether all queued expectations were met in order
 	ClearExpect()
 
@@ -26,11 +26,6 @@ type ClientMock interface {
 
 	// MatchExpectationsInOrder gives an option whether to match all expectations in the order they were set or not.
 	MatchExpectationsInOrder(b bool)
-
-	ExpectTxPipeline()
-	ExpectTxPipelineExec() *ExpectedSlice
-
-	ExpectWatch(keys ...string) *ExpectedError
 
 	ExpectCommand() *ExpectedCommandsInfo
 	ExpectClientGetName() *ExpectedString
@@ -229,7 +224,6 @@ type ClientMock interface {
 	ExpectConfigResetStat() *ExpectedStatus
 	ExpectConfigSet(parameter, value string) *ExpectedStatus
 	ExpectConfigRewrite() *ExpectedStatus
-	ExpectDBSize() *ExpectedInt
 	ExpectFlushAll() *ExpectedStatus
 	ExpectFlushAllAsync() *ExpectedStatus
 	ExpectFlushDB() *ExpectedStatus
@@ -287,6 +281,30 @@ type ClientMock interface {
 	ExpectGeoRadiusByMemberStore(key, member string, query *redis.GeoRadiusQuery) *ExpectedInt
 	ExpectGeoDist(key string, member1, member2, unit string) *ExpectedFloat
 	ExpectGeoHash(key string, members ...string) *ExpectedStringSlice
+}
+
+type specialMock interface {
+	ExpectDBSize() *ExpectedInt
+}
+
+type pipelineMock interface {
+	ExpectTxPipeline()
+	ExpectTxPipelineExec() *ExpectedSlice
+}
+
+type watchMock interface {
+	ExpectWatch(keys ...string) *ExpectedError
+}
+
+type ClientMock interface {
+	baseMock
+	specialMock
+	pipelineMock
+	watchMock
+}
+
+type ClusterClientMock interface {
+	baseMock
 }
 
 func inflow(cmd redis.Cmder, key string, val interface{}) {
