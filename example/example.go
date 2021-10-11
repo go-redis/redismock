@@ -31,7 +31,7 @@ func example() {
 
 	//hget command return redis.Nil
 	mock.ExpectHGet("key", "field").RedisNil()
-	//db.HGet(ctx, "key", "field").Err() == redis.Nil
+	//db.HGet(ctx, "key", "field").Val() == redis.Nil
 
 	//hget command... do not set return
 	mock.ExpectHGet("key", "field")
