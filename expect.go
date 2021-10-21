@@ -110,6 +110,7 @@ type baseMock interface {
 	ExpectBLPop(timeout time.Duration, keys ...string) *ExpectedStringSlice
 	ExpectBRPop(timeout time.Duration, keys ...string) *ExpectedStringSlice
 	ExpectBRPopLPush(source, destination string, timeout time.Duration) *ExpectedString
+	ExpectBLMove(source, destination, srcpos, destpos string, timeout time.Duration) *ExpectedString
 	ExpectLIndex(key string, index int64) *ExpectedString
 	ExpectLInsert(key, op string, pivot, value interface{}) *ExpectedInt
 	ExpectLInsertBefore(key string, pivot, value interface{}) *ExpectedInt
@@ -126,6 +127,7 @@ type baseMock interface {
 	ExpectLTrim(key string, start, stop int64) *ExpectedStatus
 	ExpectRPop(key string) *ExpectedString
 	ExpectRPopLPush(source, destination string) *ExpectedString
+	ExpectLMove(source, destination, srcpos, destpos string) *ExpectedString
 	ExpectRPush(key string, values ...interface{}) *ExpectedInt
 	ExpectRPushX(key string, values ...interface{}) *ExpectedInt
 

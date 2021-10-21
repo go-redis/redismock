@@ -961,6 +961,13 @@ func (m *mock) ExpectBRPopLPush(source, destination string, timeout time.Duratio
 	return e
 }
 
+func (m *mock) ExpectBLMove(source, destination, srcpos, dstpos string, timeout time.Duration) *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.BLMove(m.ctx, source, destination, srcpos, dstpos, timeout)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectLIndex(key string, index int64) *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.LIndex(m.ctx, key, index)
@@ -1069,6 +1076,13 @@ func (m *mock) ExpectRPop(key string) *ExpectedString {
 func (m *mock) ExpectRPopLPush(source, destination string) *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.RPopLPush(m.ctx, source, destination)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectLMove(source, destination, srcpos, destpos string) *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.LMove(m.ctx, source, destination, srcpos, destpos)
 	m.pushExpect(e)
 	return e
 }
