@@ -171,6 +171,7 @@ type baseMock interface {
 	ExpectXTrimApprox(key string, maxLen int64) *ExpectedInt
 	ExpectXInfoGroups(key string) *ExpectedXInfoGroups
 	ExpectXInfoStream(key string) *ExpectedXInfoStream
+	ExpectXInfoConsumers(key, group string) *ExpectedXInfoConsumers
 
 	ExpectBZPopMax(timeout time.Duration, keys ...string) *ExpectedZWithKey
 	ExpectBZPopMin(timeout time.Duration, keys ...string) *ExpectedZWithKey
@@ -763,6 +764,24 @@ func (cmd *ExpectedXInfoStream) SetVal(val *redis.XInfoStream) {
 }
 
 func (cmd *ExpectedXInfoStream) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+//--------------------
+
+type ExpectedXInfoConsumers struct {
+	expectedBase
+
+	val []redis.XInfoConsumer
+}
+
+func (cmd *ExpectedXInfoConsumers) SetVal(val []redis.XInfoConsumer) {
+	cmd.setVal = true
+	cmd.val = make([]redis.XInfoConsumer, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedXInfoConsumers) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 

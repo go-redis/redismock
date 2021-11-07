@@ -1374,6 +1374,13 @@ func (m *mock) ExpectXInfoStream(key string) *ExpectedXInfoStream {
 	return e
 }
 
+func (m *mock) ExpectXInfoConsumers(key, group string) *ExpectedXInfoConsumers {
+	e := &ExpectedXInfoConsumers{}
+	e.cmd = m.factory.XInfoConsumers(m.ctx, key, group)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectBZPopMax(timeout time.Duration, keys ...string) *ExpectedZWithKey {
 	e := &ExpectedZWithKey{}
 	e.cmd = m.factory.BZPopMax(m.ctx, timeout, keys...)
