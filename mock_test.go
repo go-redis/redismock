@@ -577,6 +577,40 @@ func operationXInfoStreamCmd(base baseMock, expected func() *ExpectedXInfoStream
 	}))
 }
 
+func operationXInfoConsumersCmd(base baseMock, expected func() *ExpectedXInfoConsumers, actual func() *redis.XInfoConsumersCmd) {
+	var (
+		setErr = errors.New("x info consumer cmd error")
+		val    []redis.XInfoConsumer
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.XInfoConsumer(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.XInfoConsumer(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]redis.XInfoConsumer{
+		{Name: "name1", Pending: 1, Idle: 2},
+		{Name: "name2", Pending: 1, Idle: 2},
+		{Name: "name3", Pending: 1, Idle: 2},
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal([]redis.XInfoConsumer{
+		{Name: "name1", Pending: 1, Idle: 2},
+		{Name: "name2", Pending: 1, Idle: 2},
+		{Name: "name3", Pending: 1, Idle: 2},
+	}))
+}
+
 func operationZWithKeyCmd(base baseMock, expected func() *ExpectedZWithKey, actual func() *redis.ZWithKeyCmd) {
 	var (
 		setErr = errors.New("z with key cmd error")

@@ -1628,6 +1628,14 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("XInfoConsumers", func() {
+			operationXInfoConsumersCmd(clientMock, func() *ExpectedXInfoConsumers {
+				return clientMock.ExpectXInfoConsumers("key", "group")
+			}, func() *redis.XInfoConsumersCmd {
+				return client.XInfoConsumers(ctx, "key", "group")
+			})
+		})
+
 		It("BZPopMax", func() {
 			operationZWithKeyCmd(clientMock, func() *ExpectedZWithKey {
 				return clientMock.ExpectBZPopMax(0, "zset1", "zset2")
