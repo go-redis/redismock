@@ -358,7 +358,7 @@ func (m *mock) CustomMatch(fn CustomMatch) *mock {
 
 func (m *mock) ExpectationsWereMet() error {
 	if m.parent != nil {
-		return m.ExpectationsWereMet()
+		return m.parent.ExpectationsWereMet()
 	}
 	for _, e := range m.expected {
 		e.lock()
@@ -374,7 +374,7 @@ func (m *mock) ExpectationsWereMet() error {
 
 func (m *mock) MatchExpectationsInOrder(b bool) {
 	if m.parent != nil {
-		m.MatchExpectationsInOrder(b)
+		m.parent.MatchExpectationsInOrder(b)
 		return
 	}
 	m.strictOrder = b
