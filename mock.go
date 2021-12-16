@@ -1619,6 +1619,13 @@ func (m *mock) ExpectZScore(key, member string) *ExpectedFloat {
 	return e
 }
 
+func (m *mock) ExpectZUnionWithScores(store redis.ZStore) *ExpectedZSlice {
+	e := &ExpectedZSlice{}
+	e.cmd = m.factory.ZUnionWithScores(m.ctx, store)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectZUnionStore(dest string, store *redis.ZStore) *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.ZUnionStore(m.ctx, dest, store)

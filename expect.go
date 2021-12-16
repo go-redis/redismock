@@ -207,6 +207,7 @@ type baseMock interface {
 	ExpectZRevRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *ExpectedZSlice
 	ExpectZRevRank(key, member string) *ExpectedInt
 	ExpectZScore(key, member string) *ExpectedFloat
+	ExpectZUnionWithScores(store redis.ZStore) *ExpectedZSlice
 	ExpectZUnionStore(dest string, store *redis.ZStore) *ExpectedInt
 
 	ExpectPFAdd(key string, els ...interface{}) *ExpectedInt

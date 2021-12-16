@@ -1985,6 +1985,20 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("ZUnionWithScores", func() {
+			operationZSliceCmd(clusterMock, func() *ExpectedZSlice {
+				return clusterMock.ExpectZUnionWithScores(redis.ZStore{
+					Keys:    []string{"zset1", "zset2"},
+					Weights: []float64{2, 3},
+				})
+			}, func() *redis.ZSliceCmd {
+				return client.ZUnionWithScores(ctx, redis.ZStore{
+					Keys:    []string{"zset1", "zset2"},
+					Weights: []float64{2, 3},
+				})
+			})
+		})
+
 		It("ZUnionStore", func() {
 			operationIntCmd(clusterMock, func() *ExpectedInt {
 				return clusterMock.ExpectZUnionStore("out", &redis.ZStore{
