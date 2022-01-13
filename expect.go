@@ -72,6 +72,7 @@ type baseMock interface {
 	ExpectMSet(values ...interface{}) *ExpectedStatus
 	ExpectMSetNX(values ...interface{}) *ExpectedBool
 	ExpectSet(key string, value interface{}, expiration time.Duration) *ExpectedStatus
+	ExpectSetArgs(key string, value interface{}, a redis.SetArgs) *ExpectedStatus
 	ExpectSetEX(key string, value interface{}, expiration time.Duration) *ExpectedStatus
 	ExpectSetNX(key string, value interface{}, expiration time.Duration) *ExpectedBool
 	ExpectSetXX(key string, value interface{}, expiration time.Duration) *ExpectedBool
