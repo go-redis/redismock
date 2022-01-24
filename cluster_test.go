@@ -1217,6 +1217,14 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("RPopCount", func() {
+			operationStringSliceCmd(clusterMock, func() *ExpectedStringSlice {
+				return clusterMock.ExpectRPopCount("key", 1)
+			}, func() *redis.StringSliceCmd {
+				return client.RPopCount(ctx, "key", 1)
+			})
+		})
+
 		It("RPopLPush", func() {
 			operationStringCmd(clusterMock, func() *ExpectedString {
 				return clusterMock.ExpectRPopLPush("key", "list")

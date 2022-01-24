@@ -1218,6 +1218,14 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("RPopCount", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectRPopCount("key", 1)
+			}, func() *redis.StringSliceCmd {
+				return client.RPopCount(ctx, "key", 1)
+			})
+		})
+
 		It("RPopLPush", func() {
 			operationStringCmd(clientMock, func() *ExpectedString {
 				return clientMock.ExpectRPopLPush("key", "list")

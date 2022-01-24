@@ -125,6 +125,7 @@ type baseMock interface {
 	ExpectLSet(key string, index int64, value interface{}) *ExpectedStatus
 	ExpectLTrim(key string, start, stop int64) *ExpectedStatus
 	ExpectRPop(key string) *ExpectedString
+	ExpectRPopCount(key string, count int) *ExpectedStringSlice
 	ExpectRPopLPush(source, destination string) *ExpectedString
 	ExpectRPush(key string, values ...interface{}) *ExpectedInt
 	ExpectRPushX(key string, values ...interface{}) *ExpectedInt
