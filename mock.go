@@ -1066,6 +1066,13 @@ func (m *mock) ExpectRPop(key string) *ExpectedString {
 	return e
 }
 
+func (m *mock) ExpectRPopCount(key string, count int) *ExpectedStringSlice {
+	e := &ExpectedStringSlice{}
+	e.cmd = m.factory.RPopCount(m.ctx, key, count)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectRPopLPush(source, destination string) *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.RPopLPush(m.ctx, source, destination)
