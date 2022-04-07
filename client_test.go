@@ -922,6 +922,14 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("ScanType", func() {
+			operationScanCmd(clientMock, func() *ExpectedScan {
+				return clientMock.ExpectScanType(0, "match", 2, "type")
+			}, func() *redis.ScanCmd {
+				return client.ScanType(ctx, 0, "match", 2, "type")
+			})
+		})
+
 		It("SScan", func() {
 			operationScanCmd(clientMock, func() *ExpectedScan {
 				return clientMock.ExpectSScan("key", 1, "match", 2)

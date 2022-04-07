@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"reflect"
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/go-redis/redis/v8"
 )
 
 type mock struct {
@@ -824,6 +823,13 @@ func (m *mock) ExpectBitField(key string, args ...interface{}) *ExpectedIntSlice
 func (m *mock) ExpectScan(cursor uint64, match string, count int64) *ExpectedScan {
 	e := &ExpectedScan{}
 	e.cmd = m.factory.Scan(m.ctx, cursor, match, count)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectScanType(cursor uint64, match string, count int64, keyType string) *ExpectedScan {
+	e := &ExpectedScan{}
+	e.cmd = m.factory.ScanType(m.ctx, cursor, match, count, keyType)
 	m.pushExpect(e)
 	return e
 }
