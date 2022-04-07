@@ -2,12 +2,11 @@ package redismock
 
 import (
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"reflect"
 	"sync"
 	"time"
 	"unsafe"
-
-	"github.com/go-redis/redis/v8"
 )
 
 type baseMock interface {
@@ -89,6 +88,7 @@ type baseMock interface {
 	ExpectBitField(key string, args ...interface{}) *ExpectedIntSlice
 
 	ExpectScan(cursor uint64, match string, count int64) *ExpectedScan
+	ExpectScanType(cursor uint64, match string, count int64, keyType string) *ExpectedScan
 	ExpectSScan(key string, cursor uint64, match string, count int64) *ExpectedScan
 	ExpectHScan(key string, cursor uint64, match string, count int64) *ExpectedScan
 	ExpectZScan(key string, cursor uint64, match string, count int64) *ExpectedScan
