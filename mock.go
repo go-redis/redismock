@@ -660,6 +660,13 @@ func (m *mock) ExpectGet(key string) *ExpectedString {
 	return e
 }
 
+func (m *mock) ExpectGetDel(key string) *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.GetDel(m.ctx, key)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectGetRange(key string, start, end int64) *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.GetRange(m.ctx, key, start, end)
