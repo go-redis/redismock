@@ -3,9 +3,9 @@ package redismock
 import (
 	"errors"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -793,6 +793,14 @@ var _ = Describe("RedisMock", func() {
 				return clientMock.ExpectSet("key", "value", 1*time.Minute)
 			}, func() *redis.StatusCmd {
 				return client.Set(ctx, "key", "value", 1*time.Minute)
+			})
+		})
+
+		It("SetArgs", func() {
+			operationStatusCmd(clientMock, func() *ExpectedStatus {
+				return clientMock.ExpectSetArgs("key", "value", redis.SetArgs{Get: true})
+			}, func() *redis.StatusCmd {
+				return client.SetArgs(ctx, "key", "value", redis.SetArgs{Get: true})
 			})
 		})
 

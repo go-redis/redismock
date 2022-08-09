@@ -723,6 +723,13 @@ func (m *mock) ExpectSet(key string, value interface{}, expiration time.Duration
 	return e
 }
 
+func (m *mock) ExpectSetArgs(key string, value interface{}, a redis.SetArgs) *ExpectedStatus {
+	e := &ExpectedStatus{}
+	e.cmd = m.factory.SetArgs(m.ctx, key, value, a)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectSetEX(key string, value interface{}, expiration time.Duration) *ExpectedStatus {
 	e := &ExpectedStatus{}
 	e.cmd = m.factory.SetEX(m.ctx, key, value, expiration)
