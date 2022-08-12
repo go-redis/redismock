@@ -674,6 +674,13 @@ func (m *mock) ExpectGetSet(key string, value interface{}) *ExpectedString {
 	return e
 }
 
+func (m *mock) ExpectGetEx(key string, expiration time.Duration) *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.GetEx(m.ctx, key, expiration)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectIncr(key string) *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.Incr(m.ctx, key)

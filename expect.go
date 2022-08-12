@@ -65,6 +65,7 @@ type baseMock interface {
 	ExpectGet(key string) *ExpectedString
 	ExpectGetRange(key string, start, end int64) *ExpectedString
 	ExpectGetSet(key string, value interface{}) *ExpectedString
+	ExpectGetEx(key string, expiration time.Duration) *ExpectedString
 	ExpectIncr(key string) *ExpectedInt
 	ExpectIncrBy(key string, value int64) *ExpectedInt
 	ExpectIncrByFloat(key string, value float64) *ExpectedFloat
