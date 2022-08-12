@@ -25,6 +25,7 @@ type mock struct {
 
 	expectRegexp bool
 	expectCustom CustomMatch
+	panicOnErr   bool
 }
 
 const (
@@ -152,6 +153,9 @@ func (m *mock) process(cmd redis.Cmder) (err error) {
 		}
 		err = fmt.Errorf(msg, cmd.Args())
 		cmd.SetErr(err)
+		if m.panicOnErr {
+			panic(err)
+		}
 		return err
 	}
 
@@ -378,6 +382,14 @@ func (m *mock) MatchExpectationsInOrder(b bool) {
 		return
 	}
 	m.strictOrder = b
+}
+
+func (m *mock) PanicOnError(b bool) {
+	if m.parent != nil {
+		m.PanicOnError(b)
+		return
+	}
+	m.panicOnErr = b
 }
 
 func (m *mock) ExpectTxPipeline() {

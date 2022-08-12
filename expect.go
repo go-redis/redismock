@@ -27,6 +27,9 @@ type baseMock interface {
 	// MatchExpectationsInOrder gives an option whether to match all expectations in the order they were set or not.
 	MatchExpectationsInOrder(b bool)
 
+	// PanicOnError will panic if expectations aren't met
+	PanicOnError(b bool)
+
 	ExpectCommand() *ExpectedCommandsInfo
 	ExpectClientGetName() *ExpectedString
 	ExpectEcho(message interface{}) *ExpectedString
