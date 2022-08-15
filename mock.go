@@ -676,6 +676,7 @@ func (m *mock) ExpectGetSet(key string, value interface{}) *ExpectedString {
 
 func (m *mock) ExpectGetEx(key string, expiration time.Duration) *ExpectedString {
 	e := &ExpectedString{}
+
 	e.cmd = m.factory.GetEx(m.ctx, key, expiration)
 	m.pushExpect(e)
 	return e
