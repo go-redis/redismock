@@ -1669,6 +1669,28 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("ZAddArgs", func() {
+			operationIntCmd(clusterMock, func() *ExpectedInt {
+				return clusterMock.ExpectZAddArgs("zset", redis.ZAddArgs{
+					Members: []redis.Z{
+						{
+							Member: "a",
+							Score:  1,
+						},
+					},
+				})
+			}, func() *redis.IntCmd {
+				return client.ZAddArgs(ctx, "zset", redis.ZAddArgs{
+					Members: []redis.Z{
+						{
+							Member: "a",
+							Score:  1,
+						},
+					},
+				})
+			})
+		})
+
 		It("ZAddNX", func() {
 			operationIntCmd(clusterMock, func() *ExpectedInt {
 				return clusterMock.ExpectZAddNX("zset", &redis.Z{

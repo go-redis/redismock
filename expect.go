@@ -176,6 +176,7 @@ type baseMock interface {
 	ExpectBZPopMax(timeout time.Duration, keys ...string) *ExpectedZWithKey
 	ExpectBZPopMin(timeout time.Duration, keys ...string) *ExpectedZWithKey
 	ExpectZAdd(key string, members ...*redis.Z) *ExpectedInt
+	ExpectZAddArgs(key string, args redis.ZAddArgs) *ExpectedInt
 	ExpectZAddNX(key string, members ...*redis.Z) *ExpectedInt
 	ExpectZAddXX(key string, members ...*redis.Z) *ExpectedInt
 	ExpectZAddCh(key string, members ...*redis.Z) *ExpectedInt
