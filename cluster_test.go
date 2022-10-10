@@ -795,6 +795,18 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("SetArgs", func() {
+			operationStatusCmd(clusterMock, func() *ExpectedStatus {
+				return clusterMock.ExpectSetArgs("key", "value", redis.SetArgs{
+					Get: true,
+				})
+			}, func() *redis.StatusCmd {
+				return client.SetArgs(ctx, "key", "value", redis.SetArgs{
+					Get: true,
+				})
+			})
+		})
+
 		It("SetEX", func() {
 			operationStatusCmd(clusterMock, func() *ExpectedStatus {
 				return clusterMock.ExpectSetEX("key", "value", 1*time.Minute)
@@ -1657,6 +1669,28 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("ZAddArgs", func() {
+			operationIntCmd(clusterMock, func() *ExpectedInt {
+				return clusterMock.ExpectZAddArgs("zset", redis.ZAddArgs{
+					Members: []redis.Z{
+						{
+							Member: "a",
+							Score:  1,
+						},
+					},
+				})
+			}, func() *redis.IntCmd {
+				return client.ZAddArgs(ctx, "zset", redis.ZAddArgs{
+					Members: []redis.Z{
+						{
+							Member: "a",
+							Score:  1,
+						},
+					},
+				})
+			})
+		})
+
 		It("ZAddNX", func() {
 			operationIntCmd(clusterMock, func() *ExpectedInt {
 				return clusterMock.ExpectZAddNX("zset", &redis.Z{
@@ -1982,6 +2016,20 @@ var _ = Describe("RedisMock", func() {
 				return clusterMock.ExpectZScore("key", "member")
 			}, func() *redis.FloatCmd {
 				return client.ZScore(ctx, "key", "member")
+			})
+		})
+
+		It("ZUnionWithScores", func() {
+			operationZSliceCmd(clusterMock, func() *ExpectedZSlice {
+				return clusterMock.ExpectZUnionWithScores(redis.ZStore{
+					Keys:    []string{"zset1", "zset2"},
+					Weights: []float64{2, 3},
+				})
+			}, func() *redis.ZSliceCmd {
+				return client.ZUnionWithScores(ctx, redis.ZStore{
+					Keys:    []string{"zset1", "zset2"},
+					Weights: []float64{2, 3},
+				})
 			})
 		})
 

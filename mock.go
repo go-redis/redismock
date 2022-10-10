@@ -257,7 +257,9 @@ func (m *mock) compare(isRegexp bool, expect, cmd interface{}) error {
 
 // using map in command leads to disorder, change the command parameter to map[string]interface{}
 // for example:
+//
 //	[mset key1 value1 key2 value2] => [mset map[string]interface{}{"key1": "value1", "key2": "value2"}]
+//
 // return bool, is it handled
 func (m *mock) mapArgs(cmd string, cmdArgs *[]interface{}) bool {
 	var cut int
@@ -719,6 +721,13 @@ func (m *mock) ExpectMSetNX(values ...interface{}) *ExpectedBool {
 func (m *mock) ExpectSet(key string, value interface{}, expiration time.Duration) *ExpectedStatus {
 	e := &ExpectedStatus{}
 	e.cmd = m.factory.Set(m.ctx, key, value, expiration)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectSetArgs(key string, value interface{}, a redis.SetArgs) *ExpectedStatus {
+	e := &ExpectedStatus{}
+	e.cmd = m.factory.SetArgs(m.ctx, key, value, a)
 	m.pushExpect(e)
 	return e
 }
@@ -1395,6 +1404,13 @@ func (m *mock) ExpectZAdd(key string, members ...*redis.Z) *ExpectedInt {
 	return e
 }
 
+func (m *mock) ExpectZAddArgs(key string, args redis.ZAddArgs) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.ZAddArgs(m.ctx, key, args)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectZAddNX(key string, members ...*redis.Z) *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.ZAddNX(m.ctx, key, members...)
@@ -1615,6 +1631,13 @@ func (m *mock) ExpectZRevRank(key, member string) *ExpectedInt {
 func (m *mock) ExpectZScore(key, member string) *ExpectedFloat {
 	e := &ExpectedFloat{}
 	e.cmd = m.factory.ZScore(m.ctx, key, member)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectZUnionWithScores(store redis.ZStore) *ExpectedZSlice {
+	e := &ExpectedZSlice{}
+	e.cmd = m.factory.ZUnionWithScores(m.ctx, store)
 	m.pushExpect(e)
 	return e
 }

@@ -72,6 +72,7 @@ type baseMock interface {
 	ExpectMSet(values ...interface{}) *ExpectedStatus
 	ExpectMSetNX(values ...interface{}) *ExpectedBool
 	ExpectSet(key string, value interface{}, expiration time.Duration) *ExpectedStatus
+	ExpectSetArgs(key string, value interface{}, a redis.SetArgs) *ExpectedStatus
 	ExpectSetEX(key string, value interface{}, expiration time.Duration) *ExpectedStatus
 	ExpectSetNX(key string, value interface{}, expiration time.Duration) *ExpectedBool
 	ExpectSetXX(key string, value interface{}, expiration time.Duration) *ExpectedBool
@@ -175,6 +176,7 @@ type baseMock interface {
 	ExpectBZPopMax(timeout time.Duration, keys ...string) *ExpectedZWithKey
 	ExpectBZPopMin(timeout time.Duration, keys ...string) *ExpectedZWithKey
 	ExpectZAdd(key string, members ...*redis.Z) *ExpectedInt
+	ExpectZAddArgs(key string, args redis.ZAddArgs) *ExpectedInt
 	ExpectZAddNX(key string, members ...*redis.Z) *ExpectedInt
 	ExpectZAddXX(key string, members ...*redis.Z) *ExpectedInt
 	ExpectZAddCh(key string, members ...*redis.Z) *ExpectedInt
@@ -207,6 +209,7 @@ type baseMock interface {
 	ExpectZRevRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *ExpectedZSlice
 	ExpectZRevRank(key, member string) *ExpectedInt
 	ExpectZScore(key, member string) *ExpectedFloat
+	ExpectZUnionWithScores(store redis.ZStore) *ExpectedZSlice
 	ExpectZUnionStore(dest string, store *redis.ZStore) *ExpectedInt
 
 	ExpectPFAdd(key string, els ...interface{}) *ExpectedInt
