@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"sync"
 	"time"
-	"unsafe"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -312,7 +311,7 @@ func inflow(cmd redis.Cmder, key string, val interface{}) {
 	if !v.IsValid() {
 		panic(fmt.Sprintf("cmd did not find key '%s'", key))
 	}
-	v = reflect.NewAt(v.Type(), unsafe.Pointer(v.UnsafeAddr())).Elem()
+	v = reflect.NewAt(v.Type(), v.Addr().UnsafePointer()).Elem()
 
 	setVal := reflect.ValueOf(val)
 	if v.Kind() != reflect.Interface && setVal.Kind() != v.Kind() {
