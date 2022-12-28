@@ -285,31 +285,31 @@ func operationScanCmd(base baseMock, expected func() *ExpectedScan, actual func(
 	Expect(cursor).To(Equal(uint64(5)))
 }
 
-// func operationStringStringMapCmd(base baseMock, expected func() *ExpectedStringStringMap, actual func() *redis.StringStringMapCmd) {
-// 	var (
-// 		setErr = errors.New("string string map cmd error")
-// 		val    map[string]string
-// 		err    error
-// 	)
+func operationMapStringStringCmd(base baseMock, expected func() *ExpectedMapStringString, actual func() *redis.MapStringStringCmd) {
+	var (
+		setErr = errors.New("string string map cmd error")
+		val    map[string]string
+		err    error
+	)
 
-// 	base.ClearExpect()
-// 	expected().SetErr(setErr)
-// 	val, err = actual().Result()
-// 	Expect(err).To(Equal(setErr))
-// 	Expect(val).To(Equal(map[string]string(nil)))
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal(map[string]string(nil)))
 
-// 	base.ClearExpect()
-// 	expected()
-// 	val, err = actual().Result()
-// 	Expect(err).To(HaveOccurred())
-// 	Expect(val).To(Equal(map[string]string(nil)))
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal(map[string]string(nil)))
 
-// 	base.ClearExpect()
-// 	expected().SetVal(map[string]string{"key": "value", "key2": "value2"})
-// 	val, err = actual().Result()
-// 	Expect(err).NotTo(HaveOccurred())
-// 	Expect(val).To(Equal(map[string]string{"key": "value", "key2": "value2"}))
-// }
+	base.ClearExpect()
+	expected().SetVal(map[string]string{"key": "value", "key2": "value2"})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(map[string]string{"key": "value", "key2": "value2"}))
+}
 
 func operationStringStructMapCmd(base baseMock, expected func() *ExpectedStringStructMap, actual func() *redis.StringStructMapCmd) {
 	var (

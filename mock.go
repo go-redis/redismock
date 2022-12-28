@@ -861,8 +861,8 @@ func (m *mock) ExpectHGet(key, field string) *ExpectedString {
 	return e
 }
 
-func (m *mock) ExpectHGetAll(key string) *ExpectedStringStringMap {
-	e := &ExpectedStringStringMap{}
+func (m *mock) ExpectHGetAll(key string) *ExpectedMapStringString {
+	e := &ExpectedMapStringString{}
 	e.cmd = m.factory.HGetAll(m.ctx, key)
 	m.pushExpect(e)
 	return e

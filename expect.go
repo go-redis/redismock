@@ -96,7 +96,7 @@ type baseMock interface {
 	ExpectHDel(key string, fields ...string) *ExpectedInt
 	ExpectHExists(key, field string) *ExpectedBool
 	ExpectHGet(key, field string) *ExpectedString
-	ExpectHGetAll(key string) *ExpectedStringStringMap
+	ExpectHGetAll(key string) *ExpectedMapStringString
 	ExpectHIncrBy(key, field string, incr int64) *ExpectedInt
 	ExpectHIncrByFloat(key, field string, incr float64) *ExpectedFloat
 	ExpectHKeys(key string) *ExpectedStringSlice
@@ -622,13 +622,13 @@ func (cmd *ExpectedScan) inflow(c redis.Cmder) {
 
 //--------------------
 
-type ExpectedStringStringMap struct {
+type ExpectedMapStringString struct {
 	expectedBase
 
 	val map[string]string
 }
 
-func (cmd *ExpectedStringStringMap) SetVal(val map[string]string) {
+func (cmd *ExpectedMapStringString) SetVal(val map[string]string) {
 	cmd.setVal = true
 	cmd.val = make(map[string]string)
 	for k, v := range val {
@@ -636,7 +636,7 @@ func (cmd *ExpectedStringStringMap) SetVal(val map[string]string) {
 	}
 }
 
-func (cmd *ExpectedStringStringMap) inflow(c redis.Cmder) {
+func (cmd *ExpectedMapStringString) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 

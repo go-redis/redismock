@@ -969,13 +969,13 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
-		// It("HGetAll", func() {
-		// 	operationStringStringMapCmd(clusterMock, func() *ExpectedStringStringMap {
-		// 		return clusterMock.ExpectHGetAll("key")
-		// 	}, func() *redis.StringStringMapCmd {
-		// 		return client.HGetAll(ctx, "key")
-		// 	})
-		// })
+		It("HGetAll", func() {
+			operationMapStringStringCmd(clusterMock, func() *ExpectedMapStringString {
+				return clusterMock.ExpectHGetAll("key")
+			}, func() *redis.MapStringStringCmd {
+				return client.HGetAll(ctx, "key")
+			})
+		})
 
 		It("HIncrBy", func() {
 			operationIntCmd(clusterMock, func() *ExpectedInt {
