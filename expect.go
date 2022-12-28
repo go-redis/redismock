@@ -7,7 +7,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v9"
 )
 
 type baseMock interface {
@@ -167,22 +167,24 @@ type baseMock interface {
 	ExpectXPendingExt(a *redis.XPendingExtArgs) *ExpectedXPendingExt
 	ExpectXClaim(a *redis.XClaimArgs) *ExpectedXMessageSlice
 	ExpectXClaimJustID(a *redis.XClaimArgs) *ExpectedStringSlice
-	ExpectXTrim(key string, maxLen int64) *ExpectedInt
-	ExpectXTrimApprox(key string, maxLen int64) *ExpectedInt
+	ExpectXTrimMaxLen(key string, maxLen int64) *ExpectedInt
+	ExpectXTrimMaxLenApprox(key string, maxLen int64, limit int64) *ExpectedInt
+	ExpectXTrimMinID(key string, minID string) *ExpectedInt
+	ExpectXTrimMinIDApprox(key string, minID string, limit int64) *ExpectedInt
 	ExpectXInfoGroups(key string) *ExpectedXInfoGroups
 	ExpectXInfoStream(key string) *ExpectedXInfoStream
 
 	ExpectBZPopMax(timeout time.Duration, keys ...string) *ExpectedZWithKey
 	ExpectBZPopMin(timeout time.Duration, keys ...string) *ExpectedZWithKey
-	ExpectZAdd(key string, members ...*redis.Z) *ExpectedInt
-	ExpectZAddNX(key string, members ...*redis.Z) *ExpectedInt
-	ExpectZAddXX(key string, members ...*redis.Z) *ExpectedInt
-	ExpectZAddCh(key string, members ...*redis.Z) *ExpectedInt
-	ExpectZAddNXCh(key string, members ...*redis.Z) *ExpectedInt
-	ExpectZAddXXCh(key string, members ...*redis.Z) *ExpectedInt
-	ExpectZIncr(key string, member *redis.Z) *ExpectedFloat
-	ExpectZIncrNX(key string, member *redis.Z) *ExpectedFloat
-	ExpectZIncrXX(key string, member *redis.Z) *ExpectedFloat
+	ExpectZAdd(key string, members ...redis.Z) *ExpectedInt
+	ExpectZAddNX(key string, members ...redis.Z) *ExpectedInt
+	ExpectZAddXX(key string, members ...redis.Z) *ExpectedInt
+	ExpectZAddCh(key string, members ...redis.Z) *ExpectedInt
+	ExpectZAddNXCh(key string, members ...redis.Z) *ExpectedInt
+	ExpectZAddXXCh(key string, members ...redis.Z) *ExpectedInt
+	ExpectZIncr(key string, member redis.Z) *ExpectedFloat
+	ExpectZIncrNX(key string, member redis.Z) *ExpectedFloat
+	ExpectZIncrXX(key string, member redis.Z) *ExpectedFloat
 	ExpectZCard(key string) *ExpectedInt
 	ExpectZCount(key, min, max string) *ExpectedInt
 	ExpectZLexCount(key, min, max string) *ExpectedInt

@@ -3,8 +3,9 @@ package example
 import (
 	"context"
 	"errors"
-	"github.com/go-redis/redismock/v8"
 	"time"
+
+	"github.com/dtsulik/redismock/v9"
 )
 
 var _ = example
