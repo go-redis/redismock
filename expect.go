@@ -38,6 +38,10 @@ type baseMock interface {
 	ExpectExists(keys ...string) *ExpectedInt
 	ExpectExpire(key string, expiration time.Duration) *ExpectedBool
 	ExpectExpireAt(key string, tm time.Time) *ExpectedBool
+	ExpectExpireNX(key string, expiration time.Duration) *ExpectedBool
+	ExpectExpireXX(key string, expiration time.Duration) *ExpectedBool
+	ExpectExpireGT(key string, expiration time.Duration) *ExpectedBool
+	ExpectExpireLT(key string, expiration time.Duration) *ExpectedBool
 	ExpectKeys(pattern string) *ExpectedStringSlice
 	ExpectMigrate(host, port, key string, db int, timeout time.Duration) *ExpectedStatus
 	ExpectMove(key string, db int) *ExpectedBool
@@ -65,6 +69,8 @@ type baseMock interface {
 	ExpectGet(key string) *ExpectedString
 	ExpectGetRange(key string, start, end int64) *ExpectedString
 	ExpectGetSet(key string, value interface{}) *ExpectedString
+	ExpectGetEx(key string, expiration time.Duration) *ExpectedString
+	ExpectGetDel(key string) *ExpectedString
 	ExpectIncr(key string) *ExpectedInt
 	ExpectIncrBy(key string, value int64) *ExpectedInt
 	ExpectIncrByFloat(key string, value float64) *ExpectedFloat
@@ -72,11 +78,13 @@ type baseMock interface {
 	ExpectMSet(values ...interface{}) *ExpectedStatus
 	ExpectMSetNX(values ...interface{}) *ExpectedBool
 	ExpectSet(key string, value interface{}, expiration time.Duration) *ExpectedStatus
+	ExpectSetArgs(key string, value interface{}, a redis.SetArgs) *ExpectedStatus
 	ExpectSetEX(key string, value interface{}, expiration time.Duration) *ExpectedStatus
 	ExpectSetNX(key string, value interface{}, expiration time.Duration) *ExpectedBool
 	ExpectSetXX(key string, value interface{}, expiration time.Duration) *ExpectedBool
 	ExpectSetRange(key string, offset int64, value string) *ExpectedInt
 	ExpectStrLen(key string) *ExpectedInt
+	ExpectCopy(sourceKey string, destKey string, db int, replace bool) *ExpectedInt
 
 	ExpectGetBit(key string, offset int64) *ExpectedInt
 	ExpectSetBit(key string, offset int64, value int) *ExpectedInt
@@ -89,6 +97,7 @@ type baseMock interface {
 	ExpectBitField(key string, args ...interface{}) *ExpectedIntSlice
 
 	ExpectScan(cursor uint64, match string, count int64) *ExpectedScan
+	ExpectScanType(cursor uint64, match string, count int64, keyType string) *ExpectedScan
 	ExpectSScan(key string, cursor uint64, match string, count int64) *ExpectedScan
 	ExpectHScan(key string, cursor uint64, match string, count int64) *ExpectedScan
 	ExpectZScan(key string, cursor uint64, match string, count int64) *ExpectedScan
@@ -106,6 +115,7 @@ type baseMock interface {
 	ExpectHMSet(key string, values ...interface{}) *ExpectedBool
 	ExpectHSetNX(key, field string, value interface{}) *ExpectedBool
 	ExpectHVals(key string) *ExpectedStringSlice
+	ExpectHRandField(key string, count int, withValues bool) *ExpectedStringSlice
 
 	ExpectBLPop(timeout time.Duration, keys ...string) *ExpectedStringSlice
 	ExpectBRPop(timeout time.Duration, keys ...string) *ExpectedStringSlice
@@ -116,6 +126,7 @@ type baseMock interface {
 	ExpectLInsertAfter(key string, pivot, value interface{}) *ExpectedInt
 	ExpectLLen(key string) *ExpectedInt
 	ExpectLPop(key string) *ExpectedString
+	ExpectLPopCount(key string, count int) *ExpectedStringSlice
 	ExpectLPos(key string, value string, args redis.LPosArgs) *ExpectedInt
 	ExpectLPosCount(key string, value string, count int64, args redis.LPosArgs) *ExpectedIntSlice
 	ExpectLPush(key string, values ...interface{}) *ExpectedInt
@@ -125,9 +136,12 @@ type baseMock interface {
 	ExpectLSet(key string, index int64, value interface{}) *ExpectedStatus
 	ExpectLTrim(key string, start, stop int64) *ExpectedStatus
 	ExpectRPop(key string) *ExpectedString
+	ExpectRPopCount(key string, count int) *ExpectedStringSlice
 	ExpectRPopLPush(source, destination string) *ExpectedString
 	ExpectRPush(key string, values ...interface{}) *ExpectedInt
 	ExpectRPushX(key string, values ...interface{}) *ExpectedInt
+	ExpectLMove(source, destination, srcpos, destpos string) *ExpectedString
+	ExpectBLMove(source, destination, srcpos, destpos string, timeout time.Duration) *ExpectedString
 
 	ExpectSAdd(key string, members ...interface{}) *ExpectedInt
 	ExpectSCard(key string) *ExpectedInt
@@ -136,6 +150,7 @@ type baseMock interface {
 	ExpectSInter(keys ...string) *ExpectedStringSlice
 	ExpectSInterStore(destination string, keys ...string) *ExpectedInt
 	ExpectSIsMember(key string, member interface{}) *ExpectedBool
+	ExpectSMIsMember(key string, members ...interface{}) *ExpectedBoolSlice
 	ExpectSMembers(key string) *ExpectedStringSlice
 	ExpectSMembersMap(key string) *ExpectedStringStructMap
 	ExpectSMove(source, destination string, member interface{}) *ExpectedBool
@@ -160,6 +175,7 @@ type baseMock interface {
 	ExpectXGroupCreateMkStream(stream, group, start string) *ExpectedStatus
 	ExpectXGroupSetID(stream, group, start string) *ExpectedStatus
 	ExpectXGroupDestroy(stream, group string) *ExpectedInt
+	ExpectXGroupCreateConsumer(stream, group, consumer string) *ExpectedInt
 	ExpectXGroupDelConsumer(stream, group, consumer string) *ExpectedInt
 	ExpectXReadGroup(a *redis.XReadGroupArgs) *ExpectedXStreamSlice
 	ExpectXAck(stream, group string, ids ...string) *ExpectedInt
@@ -167,19 +183,30 @@ type baseMock interface {
 	ExpectXPendingExt(a *redis.XPendingExtArgs) *ExpectedXPendingExt
 	ExpectXClaim(a *redis.XClaimArgs) *ExpectedXMessageSlice
 	ExpectXClaimJustID(a *redis.XClaimArgs) *ExpectedStringSlice
+	ExpectXAutoClaim(a *redis.XAutoClaimArgs) *ExpectedXAutoClaim
+	ExpectXAutoClaimJustID(a *redis.XAutoClaimArgs) *ExpectedXAutoClaimJustID
 	ExpectXTrim(key string, maxLen int64) *ExpectedInt
 	ExpectXTrimApprox(key string, maxLen int64) *ExpectedInt
+	ExpectXTrimMaxLen(key string, maxLen int64) *ExpectedInt
+	ExpectXTrimMaxLenApprox(key string, maxLen, limit int64) *ExpectedInt
+	ExpectXTrimMinID(key string, minID string) *ExpectedInt
+	ExpectXTrimMinIDApprox(key string, minID string, limit int64) *ExpectedInt
 	ExpectXInfoGroups(key string) *ExpectedXInfoGroups
 	ExpectXInfoStream(key string) *ExpectedXInfoStream
+	ExpectXInfoStreamFull(key string, count int) *ExpectedXInfoStreamFull
+	ExpectXInfoConsumers(key string, group string) *ExpectedXInfoConsumers
 
 	ExpectBZPopMax(timeout time.Duration, keys ...string) *ExpectedZWithKey
 	ExpectBZPopMin(timeout time.Duration, keys ...string) *ExpectedZWithKey
+
 	ExpectZAdd(key string, members ...*redis.Z) *ExpectedInt
 	ExpectZAddNX(key string, members ...*redis.Z) *ExpectedInt
 	ExpectZAddXX(key string, members ...*redis.Z) *ExpectedInt
 	ExpectZAddCh(key string, members ...*redis.Z) *ExpectedInt
 	ExpectZAddNXCh(key string, members ...*redis.Z) *ExpectedInt
 	ExpectZAddXXCh(key string, members ...*redis.Z) *ExpectedInt
+	ExpectZAddArgs(key string, args redis.ZAddArgs) *ExpectedInt
+	ExpectZAddArgsIncr(key string, args redis.ZAddArgs) *ExpectedFloat
 	ExpectZIncr(key string, member *redis.Z) *ExpectedFloat
 	ExpectZIncrNX(key string, member *redis.Z) *ExpectedFloat
 	ExpectZIncrXX(key string, member *redis.Z) *ExpectedFloat
@@ -187,7 +214,10 @@ type baseMock interface {
 	ExpectZCount(key, min, max string) *ExpectedInt
 	ExpectZLexCount(key, min, max string) *ExpectedInt
 	ExpectZIncrBy(key string, increment float64, member string) *ExpectedFloat
+	ExpectZInter(store *redis.ZStore) *ExpectedStringSlice
+	ExpectZInterWithScores(store *redis.ZStore) *ExpectedZSlice
 	ExpectZInterStore(destination string, store *redis.ZStore) *ExpectedInt
+	ExpectZMScore(key string, members ...string) *ExpectedFloatSlice
 	ExpectZPopMax(key string, count ...int64) *ExpectedZSlice
 	ExpectZPopMin(key string, count ...int64) *ExpectedZSlice
 	ExpectZRange(key string, start, stop int64) *ExpectedStringSlice
@@ -195,6 +225,9 @@ type baseMock interface {
 	ExpectZRangeByScore(key string, opt *redis.ZRangeBy) *ExpectedStringSlice
 	ExpectZRangeByLex(key string, opt *redis.ZRangeBy) *ExpectedStringSlice
 	ExpectZRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *ExpectedZSlice
+	ExpectZRangeArgs(z redis.ZRangeArgs) *ExpectedStringSlice
+	ExpectZRangeArgsWithScores(z redis.ZRangeArgs) *ExpectedZSlice
+	ExpectZRangeStore(dst string, z redis.ZRangeArgs) *ExpectedInt
 	ExpectZRank(key, member string) *ExpectedInt
 	ExpectZRem(key string, members ...interface{}) *ExpectedInt
 	ExpectZRemRangeByRank(key string, start, stop int64) *ExpectedInt
@@ -208,6 +241,12 @@ type baseMock interface {
 	ExpectZRevRank(key, member string) *ExpectedInt
 	ExpectZScore(key, member string) *ExpectedFloat
 	ExpectZUnionStore(dest string, store *redis.ZStore) *ExpectedInt
+	ExpectZUnion(store redis.ZStore) *ExpectedStringSlice
+	ExpectZUnionWithScores(store redis.ZStore) *ExpectedZSlice
+	ExpectZRandMember(key string, count int, withScores bool) *ExpectedStringSlice
+	ExpectZDiff(keys ...string) *ExpectedStringSlice
+	ExpectZDiffWithScores(keys ...string) *ExpectedZSlice
+	ExpectZDiffStore(destination string, keys ...string) *ExpectedInt
 
 	ExpectPFAdd(key string, els ...interface{}) *ExpectedInt
 	ExpectPFCount(keys ...string) *ExpectedInt
@@ -440,7 +479,7 @@ func (cmd *ExpectedCommandsInfo) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//------------------
+// ------------------------------------------------------------
 
 type ExpectedString struct {
 	expectedBase
@@ -457,7 +496,7 @@ func (cmd *ExpectedString) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//------------------
+// ------------------------------------------------------------
 
 type ExpectedStatus struct {
 	expectedBase
@@ -474,7 +513,7 @@ func (cmd *ExpectedStatus) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedInt struct {
 	expectedBase
@@ -491,7 +530,7 @@ func (cmd *ExpectedInt) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedBool struct {
 	expectedBase
@@ -508,7 +547,7 @@ func (cmd *ExpectedBool) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedStringSlice struct {
 	expectedBase
@@ -526,7 +565,7 @@ func (cmd *ExpectedStringSlice) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedDuration struct {
 	expectedBase
@@ -544,7 +583,7 @@ func (cmd *ExpectedDuration) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedSlice struct {
 	expectedBase
@@ -562,7 +601,7 @@ func (cmd *ExpectedSlice) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedFloat struct {
 	expectedBase
@@ -579,7 +618,25 @@ func (cmd *ExpectedFloat) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
+
+type ExpectedFloatSlice struct {
+	expectedBase
+
+	val []float64
+}
+
+func (cmd *ExpectedFloatSlice) SetVal(val []float64) {
+	cmd.setVal = true
+	cmd.val = make([]float64, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedFloatSlice) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
 
 type ExpectedIntSlice struct {
 	expectedBase
@@ -597,7 +654,7 @@ func (cmd *ExpectedIntSlice) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedScan struct {
 	expectedBase
@@ -618,7 +675,7 @@ func (cmd *ExpectedScan) inflow(c redis.Cmder) {
 	inflow(c, "cursor", cmd.cursor)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedStringStringMap struct {
 	expectedBase
@@ -638,7 +695,7 @@ func (cmd *ExpectedStringStringMap) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedStringStructMap struct {
 	expectedBase
@@ -658,7 +715,7 @@ func (cmd *ExpectedStringStructMap) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedXMessageSlice struct {
 	expectedBase
@@ -676,7 +733,7 @@ func (cmd *ExpectedXMessageSlice) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedXStreamSlice struct {
 	expectedBase
@@ -694,7 +751,7 @@ func (cmd *ExpectedXStreamSlice) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedXPending struct {
 	expectedBase
@@ -712,7 +769,7 @@ func (cmd *ExpectedXPending) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedXPendingExt struct {
 	expectedBase
@@ -730,7 +787,47 @@ func (cmd *ExpectedXPendingExt) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ----------------------------------------------------------------------
+
+type ExpectedXAutoClaim struct {
+	expectedBase
+
+	start string
+	val   []redis.XMessage
+}
+
+func (cmd *ExpectedXAutoClaim) SetVal(val []redis.XMessage, start string) {
+	cmd.setVal = true
+	cmd.start = start
+	cmd.val = make([]redis.XMessage, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedXAutoClaim) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedXAutoClaimJustID struct {
+	expectedBase
+
+	start string
+	val   []string
+}
+
+func (cmd *ExpectedXAutoClaimJustID) SetVal(val []string, start string) {
+	cmd.setVal = true
+	cmd.start = start
+	cmd.val = make([]string, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedXAutoClaimJustID) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
 
 type ExpectedXInfoGroups struct {
 	expectedBase
@@ -748,7 +845,7 @@ func (cmd *ExpectedXInfoGroups) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedXInfoStream struct {
 	expectedBase
@@ -766,7 +863,43 @@ func (cmd *ExpectedXInfoStream) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
+
+type ExpectedXInfoConsumers struct {
+	expectedBase
+
+	val []redis.XInfoConsumer
+}
+
+func (cmd *ExpectedXInfoConsumers) SetVal(val []redis.XInfoConsumer) {
+	cmd.setVal = true
+	cmd.val = make([]redis.XInfoConsumer, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedXInfoConsumers) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedXInfoStreamFull struct {
+	expectedBase
+
+	val *redis.XInfoStreamFull
+}
+
+func (cmd *ExpectedXInfoStreamFull) SetVal(val *redis.XInfoStreamFull) {
+	cmd.setVal = true
+	v := *val
+	cmd.val = &v
+}
+
+func (cmd *ExpectedXInfoStreamFull) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
 
 type ExpectedZWithKey struct {
 	expectedBase
@@ -784,7 +917,7 @@ func (cmd *ExpectedZWithKey) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedZSlice struct {
 	expectedBase
@@ -802,7 +935,7 @@ func (cmd *ExpectedZSlice) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedTime struct {
 	expectedBase
@@ -819,7 +952,7 @@ func (cmd *ExpectedTime) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedCmd struct {
 	expectedBase
@@ -836,7 +969,7 @@ func (cmd *ExpectedCmd) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedBoolSlice struct {
 	expectedBase
@@ -854,7 +987,7 @@ func (cmd *ExpectedBoolSlice) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedClusterSlots struct {
 	expectedBase
@@ -872,7 +1005,7 @@ func (cmd *ExpectedClusterSlots) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedStringIntMap struct {
 	expectedBase
@@ -892,7 +1025,7 @@ func (cmd *ExpectedStringIntMap) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedGeoPos struct {
 	expectedBase
@@ -910,7 +1043,7 @@ func (cmd *ExpectedGeoPos) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
-//--------------------
+// ------------------------------------------------------------
 
 type ExpectedGeoLocation struct {
 	expectedBase
@@ -928,7 +1061,7 @@ func (cmd *ExpectedGeoLocation) inflow(c redis.Cmder) {
 	inflow(c, "locations", cmd.locations)
 }
 
-//----------------------
+// ------------------------------------------------------------
 
 type ExpectedError struct {
 	expectedBase
