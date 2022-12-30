@@ -1600,7 +1600,7 @@ var _ = Describe("RedisMock", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
 				return clientMock.ExpectXTrim("stream", 0)
 			}, func() *redis.IntCmd {
-				return client.XTrim(ctx, "stream", 0)
+				return client.XTrim(ctx, "stream", 0) // nolint:staticcheck
 			})
 		})
 
@@ -1608,7 +1608,7 @@ var _ = Describe("RedisMock", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
 				return clientMock.ExpectXTrimApprox("stream", 0)
 			}, func() *redis.IntCmd {
-				return client.XTrimApprox(ctx, "stream", 0)
+				return client.XTrimApprox(ctx, "stream", 0) // nolint:staticcheck
 			})
 		})
 
