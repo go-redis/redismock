@@ -2364,6 +2364,27 @@ func (m *mock) ExpectGeoRadiusByMemberStore(key, member string, query *redis.Geo
 	return e
 }
 
+func (m *mock) ExpectGeoSearch(key string, q *redis.GeoSearchQuery) *ExpectedStringSlice {
+	e := &ExpectedStringSlice{}
+	e.cmd = m.factory.GeoSearch(m.ctx, key, q)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectGeoSearchLocation(key string, q *redis.GeoSearchLocationQuery) *ExpectedGeoSearchLocation {
+	e := &ExpectedGeoSearchLocation{}
+	e.cmd = m.factory.GeoSearchLocation(m.ctx, key, q)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectGeoSearchStore(key, store string, q *redis.GeoSearchStoreQuery) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.GeoSearchStore(m.ctx, key, store, q)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectGeoDist(key string, member1, member2, unit string) *ExpectedFloat {
 	e := &ExpectedFloat{}
 	e.cmd = m.factory.GeoDist(m.ctx, key, member1, member2, unit)

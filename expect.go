@@ -263,6 +263,7 @@ type baseMock interface {
 	ExpectConfigResetStat() *ExpectedStatus
 	ExpectConfigSet(parameter, value string) *ExpectedStatus
 	ExpectConfigRewrite() *ExpectedStatus
+	ExpectDBSize() *ExpectedInt
 	ExpectFlushAll() *ExpectedStatus
 	ExpectFlushAllAsync() *ExpectedStatus
 	ExpectFlushDB() *ExpectedStatus
@@ -318,6 +319,9 @@ type baseMock interface {
 	ExpectGeoRadiusStore(key string, longitude, latitude float64, query *redis.GeoRadiusQuery) *ExpectedInt
 	ExpectGeoRadiusByMember(key, member string, query *redis.GeoRadiusQuery) *ExpectedGeoLocation
 	ExpectGeoRadiusByMemberStore(key, member string, query *redis.GeoRadiusQuery) *ExpectedInt
+	ExpectGeoSearch(key string, q *redis.GeoSearchQuery) *ExpectedStringSlice
+	ExpectGeoSearchLocation(key string, q *redis.GeoSearchLocationQuery) *ExpectedGeoSearchLocation
+	ExpectGeoSearchStore(key, store string, q *redis.GeoSearchStoreQuery) *ExpectedInt
 	ExpectGeoDist(key string, member1, member2, unit string) *ExpectedFloat
 	ExpectGeoHash(key string, members ...string) *ExpectedStringSlice
 }
@@ -1059,6 +1063,24 @@ func (cmd *ExpectedGeoLocation) SetVal(val []redis.GeoLocation) {
 
 func (cmd *ExpectedGeoLocation) inflow(c redis.Cmder) {
 	inflow(c, "locations", cmd.locations)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedGeoSearchLocation struct {
+	expectedBase
+
+	val []redis.GeoLocation
+}
+
+func (cmd *ExpectedGeoSearchLocation) SetVal(val []redis.GeoLocation) {
+	cmd.setVal = true
+	cmd.val = make([]redis.GeoLocation, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedGeoSearchLocation) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
 }
 
 // ------------------------------------------------------------
