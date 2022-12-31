@@ -229,6 +229,32 @@ func operationFloatCmd(base baseMock, expected func() *ExpectedFloat, actual fun
 	Expect(val).To(Equal(float64(1)))
 }
 
+func operationFloatSliceCmd(base baseMock, expected func() *ExpectedFloatSlice, actual func() *redis.FloatSliceCmd) {
+	var (
+		setErr = errors.New("float slice cmd error")
+		val    []float64
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]float64(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]float64(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]float64{11.11, 22.22, 99.99999})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal([]float64{11.11, 22.22, 99.99999}))
+}
+
 func operationIntSliceCmd(base baseMock, expected func() *ExpectedIntSlice, actual func() *redis.IntSliceCmd) {
 	var (
 		setErr = errors.New("int slice cmd error")
@@ -480,6 +506,74 @@ func operationXPendingExtCmd(base baseMock, expected func() *ExpectedXPendingExt
 	}))
 }
 
+func operationXAutoClaimCmd(base baseMock, expected func() *ExpectedXAutoClaim, actual func() *redis.XAutoClaimCmd) {
+	var (
+		setErr = errors.New("x auto claim cmd error")
+		start  string
+		val    []redis.XMessage
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, start, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(start).To(Equal(""))
+	Expect(val).To(Equal([]redis.XMessage(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, start, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(start).To(Equal(""))
+	Expect(val).To(Equal([]redis.XMessage(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]redis.XMessage{
+		{ID: "1-0", Values: map[string]interface{}{"uno": "un"}},
+		{ID: "2-0", Values: map[string]interface{}{"dos": "deux"}},
+		{ID: "3-0", Values: map[string]interface{}{"tres": "troix"}},
+	}, "3-0")
+	val, start, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(start).To(Equal("3-0"))
+	Expect(val).To(Equal([]redis.XMessage{
+		{ID: "1-0", Values: map[string]interface{}{"uno": "un"}},
+		{ID: "2-0", Values: map[string]interface{}{"dos": "deux"}},
+		{ID: "3-0", Values: map[string]interface{}{"tres": "troix"}},
+	}))
+}
+
+func operationXAutoClaimJustIDCmd(base baseMock, expected func() *ExpectedXAutoClaimJustID, actual func() *redis.XAutoClaimJustIDCmd) {
+	var (
+		setErr = errors.New("x auto claim just id cmd error")
+		start  string
+		val    []string
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, start, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(start).To(Equal(""))
+	Expect(val).To(Equal([]string(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, start, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(start).To(Equal(""))
+	Expect(val).To(Equal([]string(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]string{"1-0", "2-0", "3-0"}, "3-0")
+	val, start, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(start).To(Equal("3-0"))
+	Expect(val).To(Equal([]string{"1-0", "2-0", "3-0"}))
+}
+
 func operationXInfoGroupsCmd(base baseMock, expected func() *ExpectedXInfoGroups, actual func() *redis.XInfoGroupsCmd) {
 	var (
 		setErr = errors.New("x info group cmd error")
@@ -572,6 +666,229 @@ func operationXInfoStreamCmd(base baseMock, expected func() *ExpectedXInfoStream
 			ID: "last_id",
 			Values: map[string]interface{}{
 				"last_key": "last_value",
+			},
+		},
+	}))
+}
+
+func operationXInfoConsumersCmd(base baseMock, expected func() *ExpectedXInfoConsumers, actual func() *redis.XInfoConsumersCmd) {
+	var (
+		setErr = errors.New("x info consumers cmd error")
+		val    []redis.XInfoConsumer
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.XInfoConsumer(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.XInfoConsumer(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]redis.XInfoConsumer{
+		{
+			Name:    "c1",
+			Pending: 2,
+			Idle:    1,
+		},
+		{
+			Name:    "c2",
+			Pending: 1,
+			Idle:    2,
+		},
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal([]redis.XInfoConsumer{
+		{
+			Name:    "c1",
+			Pending: 2,
+			Idle:    1,
+		},
+		{
+			Name:    "c2",
+			Pending: 1,
+			Idle:    2,
+		},
+	}))
+}
+
+func operationXInfoStreamFullCmd(base baseMock, expected func() *ExpectedXInfoStreamFull, actual func() *redis.XInfoStreamFullCmd) {
+	var (
+		setErr = errors.New("x info stream full cmd error")
+		val    *redis.XInfoStreamFull
+		valNil *redis.XInfoStreamFull
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal(valNil))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal(valNil))
+
+	now := time.Now()
+	now2 := now.Add(3 * time.Hour)
+	now3 := now.Add(5 * time.Hour)
+	now4 := now.Add(6 * time.Hour)
+	now5 := now.Add(8 * time.Hour)
+	now6 := now.Add(9 * time.Hour)
+	base.ClearExpect()
+	expected().SetVal(&redis.XInfoStreamFull{
+		Length:          3,
+		RadixTreeKeys:   4,
+		RadixTreeNodes:  5,
+		LastGeneratedID: "3-3",
+		Entries: []redis.XMessage{
+			{
+				ID: "1-0",
+				Values: map[string]interface{}{
+					"key1": "val1",
+					"key2": "val2",
+				},
+			},
+		},
+		Groups: []redis.XInfoStreamGroup{
+			{
+				Name:            "group1",
+				LastDeliveredID: "10-1",
+				PelCount:        3,
+				Pending: []redis.XInfoStreamGroupPending{
+					{
+						ID:            "5-1",
+						Consumer:      "consumer1",
+						DeliveryTime:  now,
+						DeliveryCount: 9,
+					},
+					{
+						ID:            "5-2",
+						Consumer:      "consumer2",
+						DeliveryTime:  now,
+						DeliveryCount: 8,
+					},
+				},
+				Consumers: []redis.XInfoStreamConsumer{
+					{
+						Name:     "consumer3",
+						SeenTime: now2,
+						PelCount: 7,
+						Pending: []redis.XInfoStreamConsumerPending{
+							{
+								ID:            "6-1",
+								DeliveryTime:  now3,
+								DeliveryCount: 3,
+							},
+							{
+								ID:            "6-2",
+								DeliveryTime:  now4,
+								DeliveryCount: 2,
+							},
+						},
+					},
+					{
+						Name:     "consumer4",
+						SeenTime: now,
+						PelCount: 6,
+						Pending: []redis.XInfoStreamConsumerPending{
+							{
+								ID:            "7-1",
+								DeliveryTime:  now5,
+								DeliveryCount: 5,
+							},
+							{
+								ID:            "8-2",
+								DeliveryTime:  now6,
+								DeliveryCount: 6,
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(&redis.XInfoStreamFull{
+		Length:          3,
+		RadixTreeKeys:   4,
+		RadixTreeNodes:  5,
+		LastGeneratedID: "3-3",
+		Entries: []redis.XMessage{
+			{
+				ID: "1-0",
+				Values: map[string]interface{}{
+					"key1": "val1",
+					"key2": "val2",
+				},
+			},
+		},
+		Groups: []redis.XInfoStreamGroup{
+			{
+				Name:            "group1",
+				LastDeliveredID: "10-1",
+				PelCount:        3,
+				Pending: []redis.XInfoStreamGroupPending{
+					{
+						ID:            "5-1",
+						Consumer:      "consumer1",
+						DeliveryTime:  now,
+						DeliveryCount: 9,
+					},
+					{
+						ID:            "5-2",
+						Consumer:      "consumer2",
+						DeliveryTime:  now,
+						DeliveryCount: 8,
+					},
+				},
+				Consumers: []redis.XInfoStreamConsumer{
+					{
+						Name:     "consumer3",
+						SeenTime: now2,
+						PelCount: 7,
+						Pending: []redis.XInfoStreamConsumerPending{
+							{
+								ID:            "6-1",
+								DeliveryTime:  now3,
+								DeliveryCount: 3,
+							},
+							{
+								ID:            "6-2",
+								DeliveryTime:  now4,
+								DeliveryCount: 2,
+							},
+						},
+					},
+					{
+						Name:     "consumer4",
+						SeenTime: now,
+						PelCount: 6,
+						Pending: []redis.XInfoStreamConsumerPending{
+							{
+								ID:            "7-1",
+								DeliveryTime:  now5,
+								DeliveryCount: 5,
+							},
+							{
+								ID:            "8-2",
+								DeliveryTime:  now6,
+								DeliveryCount: 6,
+							},
+						},
+					},
+				},
 			},
 		},
 	}))
@@ -867,6 +1184,62 @@ func operationGeoPosCmd(base baseMock, expected func() *ExpectedGeoPos, actual f
 		{
 			Longitude: 15.087267458438873,
 			Latitude:  37.50266842333162,
+		},
+	}))
+}
+
+func operationGeoSearchLocationCmd(base baseMock, expected func() *ExpectedGeoSearchLocation, actual func() *redis.GeoSearchLocationCmd) {
+	var (
+		setErr = errors.New("geo search location cmd error")
+		val    []redis.GeoLocation
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.GeoLocation(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.GeoLocation(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]redis.GeoLocation{
+		{
+			Name:      "Catania",
+			Longitude: 15.08726745843887329,
+			Latitude:  37.50266842333162032,
+			Dist:      56.4413,
+			GeoHash:   3479447370796909,
+		},
+		{
+			Name:      "Palermo",
+			Longitude: 13.36138933897018433,
+			Latitude:  38.11555639549629859,
+			Dist:      190.4424,
+			GeoHash:   3479099956230698,
+		},
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal([]redis.GeoLocation{
+		{
+			Name:      "Catania",
+			Longitude: 15.08726745843887329,
+			Latitude:  37.50266842333162032,
+			Dist:      56.4413,
+			GeoHash:   3479447370796909,
+		},
+		{
+			Name:      "Palermo",
+			Longitude: 13.36138933897018433,
+			Latitude:  38.11555639549629859,
+			Dist:      190.4424,
+			GeoHash:   3479099956230698,
 		},
 	}))
 }

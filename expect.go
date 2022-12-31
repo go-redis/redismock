@@ -809,6 +809,7 @@ func (cmd *ExpectedXAutoClaim) SetVal(val []redis.XMessage, start string) {
 
 func (cmd *ExpectedXAutoClaim) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
+	inflow(c, "start", cmd.start)
 }
 
 // ------------------------------------------------------------
@@ -829,6 +830,7 @@ func (cmd *ExpectedXAutoClaimJustID) SetVal(val []string, start string) {
 
 func (cmd *ExpectedXAutoClaimJustID) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
+	inflow(c, "start", cmd.start)
 }
 
 // ------------------------------------------------------------
