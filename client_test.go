@@ -3,11 +3,12 @@ package redismock
 import (
 	"errors"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/go-redis/redis/v8"
 )
 
 var _ = Describe("RedisMock", func() {
@@ -479,6 +480,38 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("ExpireNX", func() {
+			operationBoolCmd(clientMock, func() *ExpectedBool {
+				return clientMock.ExpectExpireNX("key", 2*time.Second)
+			}, func() *redis.BoolCmd {
+				return client.ExpireNX(ctx, "key", 2*time.Second)
+			})
+		})
+
+		It("ExpireXX", func() {
+			operationBoolCmd(clientMock, func() *ExpectedBool {
+				return clientMock.ExpectExpireXX("key", 2*time.Second)
+			}, func() *redis.BoolCmd {
+				return client.ExpireXX(ctx, "key", 2*time.Second)
+			})
+		})
+
+		It("ExpireGT", func() {
+			operationBoolCmd(clientMock, func() *ExpectedBool {
+				return clientMock.ExpectExpireGT("key", 2*time.Second)
+			}, func() *redis.BoolCmd {
+				return client.ExpireGT(ctx, "key", 2*time.Second)
+			})
+		})
+
+		It("ExpireLT", func() {
+			operationBoolCmd(clientMock, func() *ExpectedBool {
+				return clientMock.ExpectExpireLT("key", 2*time.Second)
+			}, func() *redis.BoolCmd {
+				return client.ExpireLT(ctx, "key", 2*time.Second)
+			})
+		})
+
 		It("Keys", func() {
 			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
 				return clientMock.ExpectKeys("key")
@@ -716,6 +749,22 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("GetEx", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectGetEx("key", 3*time.Second)
+			}, func() *redis.StringCmd {
+				return client.GetEx(ctx, "key", 3*time.Second)
+			})
+		})
+
+		It("GetDel", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectGetDel("key")
+			}, func() *redis.StringCmd {
+				return client.GetDel(ctx, "key")
+			})
+		})
+
 		It("Incr", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
 				return clientMock.ExpectIncr("key")
@@ -796,6 +845,71 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("SetArgs KeepTTL", func() {
+			operationStatusCmd(clientMock, func() *ExpectedStatus {
+				return clientMock.ExpectSetArgs("key", "value", redis.SetArgs{
+					Mode:    "XX",
+					Get:     true,
+					KeepTTL: true,
+				})
+			}, func() *redis.StatusCmd {
+				return client.SetArgs(ctx, "key", "value", redis.SetArgs{
+					Mode:    "XX",
+					Get:     true,
+					KeepTTL: true,
+				})
+			})
+		})
+
+		It("SetArgs EX", func() {
+			operationStatusCmd(clientMock, func() *ExpectedStatus {
+				return clientMock.ExpectSetArgs("key", "value", redis.SetArgs{
+					Mode: "XX",
+					Get:  true,
+					TTL:  4 * time.Second,
+				})
+			}, func() *redis.StatusCmd {
+				return client.SetArgs(ctx, "key", "value", redis.SetArgs{
+					Mode: "XX",
+					Get:  true,
+					TTL:  4 * time.Second,
+				})
+			})
+		})
+
+		It("SetArgs PX", func() {
+			operationStatusCmd(clientMock, func() *ExpectedStatus {
+				return clientMock.ExpectSetArgs("key", "value", redis.SetArgs{
+					Mode: "XX",
+					Get:  true,
+					TTL:  5 * time.Millisecond,
+				})
+			}, func() *redis.StatusCmd {
+				return client.SetArgs(ctx, "key", "value", redis.SetArgs{
+					Mode: "XX",
+					Get:  true,
+					TTL:  5 * time.Millisecond,
+				})
+			})
+		})
+
+		It("SetArgs EXAT", func() {
+			at := time.Now().Add(5 * time.Hour)
+			operationStatusCmd(clientMock, func() *ExpectedStatus {
+				return clientMock.ExpectSetArgs("key", "value", redis.SetArgs{
+					Mode:     "XX",
+					Get:      true,
+					ExpireAt: at,
+				})
+			}, func() *redis.StatusCmd {
+				return client.SetArgs(ctx, "key", "value", redis.SetArgs{
+					Mode:     "XX",
+					Get:      true,
+					ExpireAt: at,
+				})
+			})
+		})
+
 		It("SetEX", func() {
 			operationStatusCmd(clientMock, func() *ExpectedStatus {
 				return clientMock.ExpectSetEX("key", "value", 1*time.Minute)
@@ -833,6 +947,14 @@ var _ = Describe("RedisMock", func() {
 				return clientMock.ExpectStrLen("key")
 			}, func() *redis.IntCmd {
 				return client.StrLen(ctx, "key")
+			})
+		})
+
+		It("Copy", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectCopy("source", "dest", 3, true)
+			}, func() *redis.IntCmd {
+				return client.Copy(ctx, "source", "dest", 3, true)
 			})
 		})
 
@@ -919,6 +1041,14 @@ var _ = Describe("RedisMock", func() {
 				return clientMock.ExpectScan(1, "match", 2)
 			}, func() *redis.ScanCmd {
 				return client.Scan(ctx, 1, "match", 2)
+			})
+		})
+
+		It("ScanType", func() {
+			operationScanCmd(clientMock, func() *ExpectedScan {
+				return clientMock.ExpectScanType(1, "match", 2, "zset")
+			}, func() *redis.ScanCmd {
+				return client.ScanType(ctx, 1, "match", 2, "zset")
 			})
 		})
 
@@ -1074,6 +1204,14 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("HRandField", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectHRandField("key", 2, true)
+			}, func() *redis.StringSliceCmd {
+				return client.HRandField(ctx, "key", 2, true)
+			})
+		})
+
 		It("BLPop", func() {
 			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
 				return clientMock.ExpectBLPop(1*time.Second, "key1", "key2")
@@ -1143,6 +1281,14 @@ var _ = Describe("RedisMock", func() {
 				return clientMock.ExpectLPop("key")
 			}, func() *redis.StringCmd {
 				return client.LPop(ctx, "key")
+			})
+		})
+
+		It("LPopCount", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectLPopCount("key", 3)
+			}, func() *redis.StringSliceCmd {
+				return client.LPopCount(ctx, "key", 3)
 			})
 		})
 
@@ -1218,6 +1364,14 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("RPopCount", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectRPopCount("key", 3)
+			}, func() *redis.StringSliceCmd {
+				return client.RPopCount(ctx, "key", 3)
+			})
+		})
+
 		It("RPopLPush", func() {
 			operationStringCmd(clientMock, func() *ExpectedString {
 				return clientMock.ExpectRPopLPush("key", "list")
@@ -1239,6 +1393,22 @@ var _ = Describe("RedisMock", func() {
 				return clientMock.ExpectRPushX("key", "value1", "value2")
 			}, func() *redis.IntCmd {
 				return client.RPushX(ctx, "key", "value1", "value2")
+			})
+		})
+
+		It("LMove", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectLMove("source", "dest", "srcpos", "destpos")
+			}, func() *redis.StringCmd {
+				return client.LMove(ctx, "source", "dest", "srcpos", "destpos")
+			})
+		})
+
+		It("BLMove", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectBLMove("source", "dest", "srcpos", "destpos", 3*time.Second)
+			}, func() *redis.StringCmd {
+				return client.BLMove(ctx, "source", "dest", "srcpos", "destpos", 3*time.Second)
 			})
 		})
 
@@ -1295,6 +1465,14 @@ var _ = Describe("RedisMock", func() {
 				return clientMock.ExpectSIsMember("key", "one")
 			}, func() *redis.BoolCmd {
 				return client.SIsMember(ctx, "key", "one")
+			})
+		})
+
+		It("SMIsMember", func() {
+			operationBoolSliceCmd(clientMock, func() *ExpectedBoolSlice {
+				return clientMock.ExpectSMIsMember("key", "one", "two")
+			}, func() *redis.BoolSliceCmd {
+				return client.SMIsMember(ctx, "key", "one", "two")
 			})
 		})
 
@@ -1498,6 +1676,14 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("XGroupCreateConsumer", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectXGroupCreateConsumer("stream", "group", "consumer")
+			}, func() *redis.IntCmd {
+				return client.XGroupCreateConsumer(ctx, "stream", "group", "consumer")
+			})
+		})
+
 		It("XGroupDelConsumer", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
 				return clientMock.ExpectXGroupDelConsumer("stream", "group", "consumer")
@@ -1596,6 +1782,50 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("XAutoClaim", func() {
+			operationXAutoClaimCmd(clientMock, func() *ExpectedXAutoClaim {
+				return clientMock.ExpectXAutoClaim(&redis.XAutoClaimArgs{
+					Stream:   "stream",
+					Group:    "group",
+					MinIdle:  3 * time.Second,
+					Start:    "1-1",
+					Count:    3,
+					Consumer: "consumer",
+				})
+			}, func() *redis.XAutoClaimCmd {
+				return client.XAutoClaim(ctx, &redis.XAutoClaimArgs{
+					Stream:   "stream",
+					Group:    "group",
+					MinIdle:  3 * time.Second,
+					Start:    "1-1",
+					Count:    3,
+					Consumer: "consumer",
+				})
+			})
+		})
+
+		It("XAutoClaimJustID", func() {
+			operationXAutoClaimJustIDCmd(clientMock, func() *ExpectedXAutoClaimJustID {
+				return clientMock.ExpectXAutoClaimJustID(&redis.XAutoClaimArgs{
+					Stream:   "stream",
+					Group:    "group",
+					MinIdle:  3 * time.Second,
+					Start:    "1-1",
+					Count:    3,
+					Consumer: "consumer",
+				})
+			}, func() *redis.XAutoClaimJustIDCmd {
+				return client.XAutoClaimJustID(ctx, &redis.XAutoClaimArgs{
+					Stream:   "stream",
+					Group:    "group",
+					MinIdle:  3 * time.Second,
+					Start:    "1-1",
+					Count:    3,
+					Consumer: "consumer",
+				})
+			})
+		})
+
 		It("XTrim", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
 				return clientMock.ExpectXTrim("stream", 0)
@@ -1612,6 +1842,38 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("XTrimMaxLen", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectXTrimMaxLen("stream", 0)
+			}, func() *redis.IntCmd {
+				return client.XTrimMaxLen(ctx, "stream", 0) // nolint:staticcheck
+			})
+		})
+
+		It("XTrimMaxLenApprox", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectXTrimMaxLenApprox("stream", 1, 2)
+			}, func() *redis.IntCmd {
+				return client.XTrimMaxLenApprox(ctx, "stream", 1, 2) // nolint:staticcheck
+			})
+		})
+
+		It("XTrimMinID", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectXTrimMinID("stream", "2-0")
+			}, func() *redis.IntCmd {
+				return client.XTrimMinID(ctx, "stream", "2-0") // nolint:staticcheck
+			})
+		})
+
+		It("XTrimMinIDApprox", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectXTrimMinIDApprox("stream", "3-0", 2)
+			}, func() *redis.IntCmd {
+				return client.XTrimMinIDApprox(ctx, "stream", "3-0", 2) // nolint:staticcheck
+			})
+		})
+
 		It("XInfoGroups", func() {
 			operationXInfoGroupsCmd(clientMock, func() *ExpectedXInfoGroups {
 				return clientMock.ExpectXInfoGroups("key")
@@ -1625,6 +1887,22 @@ var _ = Describe("RedisMock", func() {
 				return clientMock.ExpectXInfoStream("key")
 			}, func() *redis.XInfoStreamCmd {
 				return client.XInfoStream(ctx, "key")
+			})
+		})
+
+		It("XInfoStreamFull", func() {
+			operationXInfoStreamFullCmd(clientMock, func() *ExpectedXInfoStreamFull {
+				return clientMock.ExpectXInfoStreamFull("key", 3)
+			}, func() *redis.XInfoStreamFullCmd {
+				return client.XInfoStreamFull(ctx, "key", 3)
+			})
+		})
+
+		It("XInfoConsumers", func() {
+			operationXInfoConsumersCmd(clientMock, func() *ExpectedXInfoConsumers {
+				return clientMock.ExpectXInfoConsumers("key", "group")
+			}, func() *redis.XInfoConsumersCmd {
+				return client.XInfoConsumers(ctx, "key", "group")
 			})
 		})
 
@@ -1728,6 +2006,54 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("ZAddArgs", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectZAddArgs("zset", redis.ZAddArgs{
+					XX: true,
+					LT: true,
+					Ch: true,
+					Members: []redis.Z{
+						{Score: 3, Member: "one"},
+						{Score: 4, Member: "two"},
+					},
+				})
+			}, func() *redis.IntCmd {
+				return client.ZAddArgs(ctx, "zset", redis.ZAddArgs{
+					XX: true,
+					LT: true,
+					Ch: true,
+					Members: []redis.Z{
+						{Score: 3, Member: "one"},
+						{Score: 4, Member: "two"},
+					},
+				})
+			})
+		})
+
+		It("ZAddArgsIncr", func() {
+			operationFloatCmd(clientMock, func() *ExpectedFloat {
+				return clientMock.ExpectZAddArgsIncr("zset", redis.ZAddArgs{
+					NX: true,
+					GT: true,
+					Ch: true,
+					Members: []redis.Z{
+						{Score: 7, Member: "three"},
+						{Score: 5, Member: "four"},
+					},
+				})
+			}, func() *redis.FloatCmd {
+				return client.ZAddArgsIncr(ctx, "zset", redis.ZAddArgs{
+					NX: true,
+					GT: true,
+					Ch: true,
+					Members: []redis.Z{
+						{Score: 7, Member: "three"},
+						{Score: 5, Member: "four"},
+					},
+				})
+			})
+		})
+
 		It("ZIncr", func() {
 			operationFloatCmd(clientMock, func() *ExpectedFloat {
 				return clientMock.ExpectZIncr("zset", &redis.Z{
@@ -1802,6 +2128,38 @@ var _ = Describe("RedisMock", func() {
 			})
 		})
 
+		It("ZInter", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectZInter(&redis.ZStore{
+					Keys:      []string{"k1", "k2", "k3"},
+					Weights:   []float64{11.11, 22.22, 33.33},
+					Aggregate: "sum",
+				})
+			}, func() *redis.StringSliceCmd {
+				return client.ZInter(ctx, &redis.ZStore{
+					Keys:      []string{"k1", "k2", "k3"},
+					Weights:   []float64{11.11, 22.22, 33.33},
+					Aggregate: "sum",
+				})
+			})
+		})
+
+		It("ZInterWithScores", func() {
+			operationZSliceCmd(clientMock, func() *ExpectedZSlice {
+				return clientMock.ExpectZInterWithScores(&redis.ZStore{
+					Keys:      []string{"key1", "key2", "key3"},
+					Weights:   []float64{123.123, 456.456, 789.789},
+					Aggregate: "sum",
+				})
+			}, func() *redis.ZSliceCmd {
+				return client.ZInterWithScores(ctx, &redis.ZStore{
+					Keys:      []string{"key1", "key2", "key3"},
+					Weights:   []float64{123.123, 456.456, 789.789},
+					Aggregate: "sum",
+				})
+			})
+		})
+
 		It("ZInterStore", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
 				return clientMock.ExpectZInterStore("out", &redis.ZStore{
@@ -1813,6 +2171,14 @@ var _ = Describe("RedisMock", func() {
 					Keys:    []string{"zset1", "zset2"},
 					Weights: []float64{2, 3},
 				})
+			})
+		})
+
+		It("ZMScore", func() {
+			operationFloatSliceCmd(clientMock, func() *ExpectedFloatSlice {
+				return clientMock.ExpectZMScore("key", "m1", "m2", "m3")
+			}, func() *redis.FloatSliceCmd {
+				return client.ZMScore(ctx, "key", "m1", "m2", "m3")
 			})
 		})
 
@@ -1886,6 +2252,78 @@ var _ = Describe("RedisMock", func() {
 				return client.ZRangeByScoreWithScores(ctx, "zset", &redis.ZRangeBy{
 					Min: "-inf",
 					Max: "+inf",
+				})
+			})
+		})
+
+		It("ZRangeArgs", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectZRangeArgs(redis.ZRangeArgs{
+					Key:     "zset",
+					Start:   1,
+					Stop:    4,
+					ByScore: true,
+					Rev:     true,
+					Offset:  1,
+					Count:   2,
+				})
+			}, func() *redis.StringSliceCmd {
+				return client.ZRangeArgs(ctx, redis.ZRangeArgs{
+					Key:     "zset",
+					Start:   1,
+					Stop:    4,
+					ByScore: true,
+					Rev:     true,
+					Offset:  1,
+					Count:   2,
+				})
+			})
+		})
+
+		It("ZRangeArgsWithScores", func() {
+			operationZSliceCmd(clientMock, func() *ExpectedZSlice {
+				return clientMock.ExpectZRangeArgsWithScores(redis.ZRangeArgs{
+					Key:     "key",
+					Start:   2,
+					Stop:    3,
+					ByScore: true,
+					Rev:     true,
+					Offset:  2,
+					Count:   3,
+				})
+			}, func() *redis.ZSliceCmd {
+				return client.ZRangeArgsWithScores(ctx, redis.ZRangeArgs{
+					Key:     "key",
+					Start:   2,
+					Stop:    3,
+					ByScore: true,
+					Rev:     true,
+					Offset:  2,
+					Count:   3,
+				})
+			})
+		})
+
+		It("ZRangeStore", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectZRangeStore("dst", redis.ZRangeArgs{
+					Key:     "key3",
+					Start:   6,
+					Stop:    7,
+					ByScore: true,
+					Rev:     true,
+					Offset:  8,
+					Count:   9,
+				})
+			}, func() *redis.IntCmd {
+				return client.ZRangeStore(ctx, "dst", redis.ZRangeArgs{
+					Key:     "key3",
+					Start:   6,
+					Stop:    7,
+					ByScore: true,
+					Rev:     true,
+					Offset:  8,
+					Count:   9,
 				})
 			})
 		})
@@ -1997,6 +2435,70 @@ var _ = Describe("RedisMock", func() {
 					Keys:    []string{"zset1", "zset2"},
 					Weights: []float64{2, 3},
 				})
+			})
+		})
+
+		It("ZUnion", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectZUnion(redis.ZStore{
+					Keys:      []string{"k1", "k2", "k3"},
+					Weights:   []float64{11.11, 22.22, 33.33},
+					Aggregate: "sum",
+				})
+			}, func() *redis.StringSliceCmd {
+				return client.ZUnion(ctx, redis.ZStore{
+					Keys:      []string{"k1", "k2", "k3"},
+					Weights:   []float64{11.11, 22.22, 33.33},
+					Aggregate: "sum",
+				})
+			})
+		})
+
+		It("ZUnionWithScores", func() {
+			operationZSliceCmd(clientMock, func() *ExpectedZSlice {
+				return clientMock.ExpectZUnionWithScores(redis.ZStore{
+					Keys:      []string{"k1", "k2", "k3"},
+					Weights:   []float64{11.11, 22.22, 33.33},
+					Aggregate: "sum",
+				})
+			}, func() *redis.ZSliceCmd {
+				return client.ZUnionWithScores(ctx, redis.ZStore{
+					Keys:      []string{"k1", "k2", "k3"},
+					Weights:   []float64{11.11, 22.22, 33.33},
+					Aggregate: "sum",
+				})
+			})
+		})
+
+		It("ZRandMember", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectZRandMember("key", 3, true)
+			}, func() *redis.StringSliceCmd {
+				return client.ZRandMember(ctx, "key", 3, true)
+			})
+		})
+
+		It("ZDiff", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectZDiff("k1", "k2", "k3")
+			}, func() *redis.StringSliceCmd {
+				return client.ZDiff(ctx, "k1", "k2", "k3")
+			})
+		})
+
+		It("ZDiffWithScores", func() {
+			operationZSliceCmd(clientMock, func() *ExpectedZSlice {
+				return clientMock.ExpectZDiffWithScores("k1", "k2", "k3")
+			}, func() *redis.ZSliceCmd {
+				return client.ZDiffWithScores(ctx, "k1", "k2", "k3")
+			})
+		})
+
+		It("ZDiffStore", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectZDiffStore("dest", "k1", "k2", "k3")
+			}, func() *redis.IntCmd {
+				return client.ZDiffStore(ctx, "dest", "k1", "k2", "k3")
 			})
 		})
 
@@ -2575,6 +3077,84 @@ var _ = Describe("RedisMock", func() {
 					Sort:        "desc",
 					Store:       "data",
 					StoreDist:   "dist",
+				})
+			})
+		})
+
+		It("GeoSearch", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectGeoSearch("key", &redis.GeoSearchQuery{
+					Longitude: 15,
+					Latitude:  37,
+					BoxWidth:  200,
+					BoxHeight: 200,
+					BoxUnit:   "km",
+					Sort:      "asc",
+				})
+			}, func() *redis.StringSliceCmd {
+				return client.GeoSearch(ctx, "key", &redis.GeoSearchQuery{
+					Longitude: 15,
+					Latitude:  37,
+					BoxWidth:  200,
+					BoxHeight: 200,
+					BoxUnit:   "km",
+					Sort:      "asc",
+				})
+			})
+		})
+
+		It("GeoSearchLocation", func() {
+			operationGeoSearchLocationCmd(clientMock, func() *ExpectedGeoSearchLocation {
+				return clientMock.ExpectGeoSearchLocation("key", &redis.GeoSearchLocationQuery{
+					GeoSearchQuery: redis.GeoSearchQuery{
+						Longitude:  15,
+						Latitude:   37,
+						Radius:     200,
+						RadiusUnit: "km",
+						Sort:       "asc",
+					},
+					WithHash:  true,
+					WithDist:  true,
+					WithCoord: true,
+				})
+			}, func() *redis.GeoSearchLocationCmd {
+				return client.GeoSearchLocation(ctx, "key", &redis.GeoSearchLocationQuery{
+					GeoSearchQuery: redis.GeoSearchQuery{
+						Longitude:  15,
+						Latitude:   37,
+						Radius:     200,
+						RadiusUnit: "km",
+						Sort:       "asc",
+					},
+					WithHash:  true,
+					WithDist:  true,
+					WithCoord: true,
+				})
+			})
+		})
+
+		It("GeoSearchStore", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectGeoSearchStore("key", "store", &redis.GeoSearchStoreQuery{
+					GeoSearchQuery: redis.GeoSearchQuery{
+						Longitude:  15,
+						Latitude:   37,
+						Radius:     200,
+						RadiusUnit: "km",
+						Sort:       "asc",
+					},
+					StoreDist: false,
+				})
+			}, func() *redis.IntCmd {
+				return client.GeoSearchStore(ctx, "key", "store", &redis.GeoSearchStoreQuery{
+					GeoSearchQuery: redis.GeoSearchQuery{
+						Longitude:  15,
+						Latitude:   37,
+						Radius:     200,
+						RadiusUnit: "km",
+						Sort:       "asc",
+					},
+					StoreDist: false,
 				})
 			})
 		})
