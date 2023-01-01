@@ -326,10 +326,6 @@ type baseMock interface {
 	ExpectGeoHash(key string, members ...string) *ExpectedStringSlice
 }
 
-type specialMock interface {
-	ExpectDBSize() *ExpectedInt
-}
-
 type pipelineMock interface {
 	ExpectTxPipeline()
 	ExpectTxPipelineExec() *ExpectedSlice
@@ -341,7 +337,6 @@ type watchMock interface {
 
 type ClientMock interface {
 	baseMock
-	specialMock
 	pipelineMock
 	watchMock
 }

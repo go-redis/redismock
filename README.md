@@ -66,4 +66,3 @@ RedisCluster
 - `Subscribe` / `PSubscribe`
 - `Pipeline` / `TxPipeline`
 - `Watch`
-- `DBSize`
