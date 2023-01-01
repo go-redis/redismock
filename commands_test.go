@@ -13,6 +13,7 @@ var _ = Describe("Commands", func() {
 	var (
 		clientMock baseMock
 		client     redis.Cmdable
+		clientType redisClientType
 	)
 
 	disorder := func() map[string]interface{} {
@@ -25,6 +26,21 @@ var _ = Describe("Commands", func() {
 	}
 
 	callCommandTest := func() {
+		It("Do", func() {
+			operationCmdCmd(clientMock, func() *ExpectedCmd {
+				return clientMock.ExpectDo("set", "key", "value")
+			}, func() *redis.Cmd {
+				switch clientType {
+				case redisClient:
+					return client.(*redis.Client).Do(ctx, "set", "key", "value")
+				case redisCluster:
+					return client.(*redis.ClusterClient).Do(ctx, "set", "key", "value")
+				default:
+					panic("ExpectDo: unsupported client type")
+				}
+			})
+		})
+
 		It("Command", func() {
 			commandsInfo := []*redis.CommandInfo{
 				{
@@ -2846,6 +2862,7 @@ var _ = Describe("Commands", func() {
 	Describe("client", func() {
 		BeforeEach(func() {
 			client, clientMock = NewClientMock()
+			clientType = redisClient
 		})
 
 		AfterEach(func() {
@@ -2859,6 +2876,7 @@ var _ = Describe("Commands", func() {
 	Describe("cluster", func() {
 		BeforeEach(func() {
 			client, clientMock = NewClusterMock()
+			clientType = redisCluster
 		})
 
 		AfterEach(func() {
