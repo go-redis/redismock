@@ -27,6 +27,7 @@ type baseMock interface {
 	// MatchExpectationsInOrder gives an option whether to match all expectations in the order they were set or not.
 	MatchExpectationsInOrder(b bool)
 
+	ExpectDo(args ...interface{}) *ExpectedCmd
 	ExpectCommand() *ExpectedCommandsInfo
 	ExpectClientGetName() *ExpectedString
 	ExpectEcho(message interface{}) *ExpectedString

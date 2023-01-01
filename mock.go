@@ -25,10 +25,14 @@ type mock struct {
 
 	expectRegexp bool
 	expectCustom CustomMatch
+
+	clientType redisClientType
 }
 
+type redisClientType int
+
 const (
-	redisClient = iota
+	redisClient redisClientType = iota + 1
 	redisCluster
 )
 
@@ -44,13 +48,14 @@ func NewClusterMock() (*redis.ClusterClient, ClusterClientMock) {
 	return m.client.(*redis.ClusterClient), m
 }
 
-func newMock(clientType int) *mock {
+func newMock(typ redisClientType) *mock {
 	m := &mock{
-		ctx: context.Background(),
+		ctx:        context.Background(),
+		clientType: typ,
 	}
 
 	// MaxRetries/MaxRedirects set -2, avoid executing commands on the redis server
-	switch clientType {
+	switch typ {
 	case redisClient:
 		opt := &redis.Options{MaxRetries: -2}
 		m.factory = redis.NewClient(opt)
@@ -172,7 +177,7 @@ func (m *mock) process(cmd redis.Cmder) (err error) {
 		return err
 	}
 
-	// if do not set error or redis.Nil, must set val
+	// if you do not set error or redis.Nil, must set val
 	if !expect.isSetVal() {
 		err = fmt.Errorf("cmd(%s), return value is required", expect.name())
 		cmd.SetErr(err)
@@ -382,6 +387,8 @@ func (m *mock) MatchExpectationsInOrder(b bool) {
 	m.strictOrder = b
 }
 
+// -----------------------------------------------------
+
 func (m *mock) ExpectTxPipeline() {
 	e := &ExpectedStatus{}
 	e.cmd = redis.NewStatusCmd(m.ctx, "multi")
@@ -406,6 +413,24 @@ func (m *mock) ExpectWatch(keys ...string) *ExpectedError {
 	}
 	e.cmd = redis.NewStatusCmd(m.ctx, args...)
 	e.setVal = true
+	m.pushExpect(e)
+	return e
+}
+
+// ------------------------------------------------
+
+func (m *mock) ExpectDo(args ...interface{}) *ExpectedCmd {
+	e := &ExpectedCmd{}
+
+	switch m.clientType {
+	case redisClient:
+		e.cmd = m.factory.(*redis.Client).Do(m.ctx, args...)
+	case redisCluster:
+		e.cmd = m.factory.(*redis.ClusterClient).Do(m.ctx, args...)
+	default:
+		panic("ExpectDo: unsupported client type")
+	}
+
 	m.pushExpect(e)
 	return e
 }
