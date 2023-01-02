@@ -1,4 +1,4 @@
-# Redis client Mock [![Build Status](https://travis-ci.com/go-redis/redismock.svg?branch=v8)](https://travis-ci.com/go-redis/redismock)
+# Redis client Mock
 
 Provide mock test for redis query, Compatible with github.com/go-redis/redis/v8
 
