@@ -7,7 +7,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v9"
 )
 
 type baseMock interface {
@@ -80,7 +80,7 @@ type baseMock interface {
 	ExpectMSetNX(values ...interface{}) *ExpectedBool
 	ExpectSet(key string, value interface{}, expiration time.Duration) *ExpectedStatus
 	ExpectSetArgs(key string, value interface{}, a redis.SetArgs) *ExpectedStatus
-	ExpectSetEX(key string, value interface{}, expiration time.Duration) *ExpectedStatus
+	ExpectSetEx(key string, value interface{}, expiration time.Duration) *ExpectedStatus
 	ExpectSetNX(key string, value interface{}, expiration time.Duration) *ExpectedBool
 	ExpectSetXX(key string, value interface{}, expiration time.Duration) *ExpectedBool
 	ExpectSetRange(key string, offset int64, value string) *ExpectedInt
@@ -106,7 +106,7 @@ type baseMock interface {
 	ExpectHDel(key string, fields ...string) *ExpectedInt
 	ExpectHExists(key, field string) *ExpectedBool
 	ExpectHGet(key, field string) *ExpectedString
-	ExpectHGetAll(key string) *ExpectedStringStringMap
+	ExpectHGetAll(key string) *ExpectedMapStringString
 	ExpectHIncrBy(key, field string, incr int64) *ExpectedInt
 	ExpectHIncrByFloat(key, field string, incr float64) *ExpectedFloat
 	ExpectHKeys(key string) *ExpectedStringSlice
@@ -116,7 +116,7 @@ type baseMock interface {
 	ExpectHMSet(key string, values ...interface{}) *ExpectedBool
 	ExpectHSetNX(key, field string, value interface{}) *ExpectedBool
 	ExpectHVals(key string) *ExpectedStringSlice
-	ExpectHRandField(key string, count int, withValues bool) *ExpectedStringSlice
+	ExpectHRandField(key string, count int) *ExpectedStringSlice
 
 	ExpectBLPop(timeout time.Duration, keys ...string) *ExpectedStringSlice
 	ExpectBRPop(timeout time.Duration, keys ...string) *ExpectedStringSlice
@@ -186,8 +186,6 @@ type baseMock interface {
 	ExpectXClaimJustID(a *redis.XClaimArgs) *ExpectedStringSlice
 	ExpectXAutoClaim(a *redis.XAutoClaimArgs) *ExpectedXAutoClaim
 	ExpectXAutoClaimJustID(a *redis.XAutoClaimArgs) *ExpectedXAutoClaimJustID
-	ExpectXTrim(key string, maxLen int64) *ExpectedInt
-	ExpectXTrimApprox(key string, maxLen int64) *ExpectedInt
 	ExpectXTrimMaxLen(key string, maxLen int64) *ExpectedInt
 	ExpectXTrimMaxLenApprox(key string, maxLen, limit int64) *ExpectedInt
 	ExpectXTrimMinID(key string, minID string) *ExpectedInt
@@ -200,17 +198,11 @@ type baseMock interface {
 	ExpectBZPopMax(timeout time.Duration, keys ...string) *ExpectedZWithKey
 	ExpectBZPopMin(timeout time.Duration, keys ...string) *ExpectedZWithKey
 
-	ExpectZAdd(key string, members ...*redis.Z) *ExpectedInt
-	ExpectZAddNX(key string, members ...*redis.Z) *ExpectedInt
-	ExpectZAddXX(key string, members ...*redis.Z) *ExpectedInt
-	ExpectZAddCh(key string, members ...*redis.Z) *ExpectedInt
-	ExpectZAddNXCh(key string, members ...*redis.Z) *ExpectedInt
-	ExpectZAddXXCh(key string, members ...*redis.Z) *ExpectedInt
+	ExpectZAdd(key string, members ...redis.Z) *ExpectedInt
+	ExpectZAddNX(key string, members ...redis.Z) *ExpectedInt
+	ExpectZAddXX(key string, members ...redis.Z) *ExpectedInt
 	ExpectZAddArgs(key string, args redis.ZAddArgs) *ExpectedInt
 	ExpectZAddArgsIncr(key string, args redis.ZAddArgs) *ExpectedFloat
-	ExpectZIncr(key string, member *redis.Z) *ExpectedFloat
-	ExpectZIncrNX(key string, member *redis.Z) *ExpectedFloat
-	ExpectZIncrXX(key string, member *redis.Z) *ExpectedFloat
 	ExpectZCard(key string) *ExpectedInt
 	ExpectZCount(key, min, max string) *ExpectedInt
 	ExpectZLexCount(key, min, max string) *ExpectedInt
@@ -244,7 +236,7 @@ type baseMock interface {
 	ExpectZUnionStore(dest string, store *redis.ZStore) *ExpectedInt
 	ExpectZUnion(store redis.ZStore) *ExpectedStringSlice
 	ExpectZUnionWithScores(store redis.ZStore) *ExpectedZSlice
-	ExpectZRandMember(key string, count int, withScores bool) *ExpectedStringSlice
+	ExpectZRandMember(key string, count int) *ExpectedStringSlice
 	ExpectZDiff(keys ...string) *ExpectedStringSlice
 	ExpectZDiffWithScores(keys ...string) *ExpectedZSlice
 	ExpectZDiffStore(destination string, keys ...string) *ExpectedInt
@@ -260,7 +252,7 @@ type baseMock interface {
 	ExpectClientList() *ExpectedString
 	ExpectClientPause(dur time.Duration) *ExpectedBool
 	ExpectClientID() *ExpectedInt
-	ExpectConfigGet(parameter string) *ExpectedSlice
+	ExpectConfigGet(parameter string) *ExpectedMapStringString
 	ExpectConfigResetStat() *ExpectedStatus
 	ExpectConfigSet(parameter, value string) *ExpectedStatus
 	ExpectConfigRewrite() *ExpectedStatus
@@ -291,7 +283,7 @@ type baseMock interface {
 
 	ExpectPublish(channel string, message interface{}) *ExpectedInt
 	ExpectPubSubChannels(pattern string) *ExpectedStringSlice
-	ExpectPubSubNumSub(channels ...string) *ExpectedStringIntMap
+	ExpectPubSubNumSub(channels ...string) *ExpectedMapStringInt
 	ExpectPubSubNumPat() *ExpectedInt
 
 	ExpectClusterSlots() *ExpectedClusterSlots
@@ -677,13 +669,13 @@ func (cmd *ExpectedScan) inflow(c redis.Cmder) {
 
 // ------------------------------------------------------------
 
-type ExpectedStringStringMap struct {
+type ExpectedMapStringString struct {
 	expectedBase
 
 	val map[string]string
 }
 
-func (cmd *ExpectedStringStringMap) SetVal(val map[string]string) {
+func (cmd *ExpectedMapStringString) SetVal(val map[string]string) {
 	cmd.setVal = true
 	cmd.val = make(map[string]string)
 	for k, v := range val {
@@ -691,7 +683,7 @@ func (cmd *ExpectedStringStringMap) SetVal(val map[string]string) {
 	}
 }
 
-func (cmd *ExpectedStringStringMap) inflow(c redis.Cmder) {
+func (cmd *ExpectedMapStringString) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
@@ -1009,13 +1001,13 @@ func (cmd *ExpectedClusterSlots) inflow(c redis.Cmder) {
 
 // ------------------------------------------------------------
 
-type ExpectedStringIntMap struct {
+type ExpectedMapStringInt struct {
 	expectedBase
 
 	val map[string]int64
 }
 
-func (cmd *ExpectedStringIntMap) SetVal(val map[string]int64) {
+func (cmd *ExpectedMapStringInt) SetVal(val map[string]int64) {
 	cmd.setVal = true
 	cmd.val = make(map[string]int64)
 	for k, v := range val {
@@ -1023,7 +1015,7 @@ func (cmd *ExpectedStringIntMap) SetVal(val map[string]int64) {
 	}
 }
 
-func (cmd *ExpectedStringIntMap) inflow(c redis.Cmder) {
+func (cmd *ExpectedMapStringInt) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 

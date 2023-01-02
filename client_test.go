@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v9"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

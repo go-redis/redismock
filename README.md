@@ -1,13 +1,13 @@
-# Redis client Mock [![Build Status](https://travis-ci.com/go-redis/redismock.svg?branch=v8)](https://travis-ci.com/go-redis/redismock)
+# Redis client Mock
 
-Provide mock test for redis query, Compatible with github.com/go-redis/redis/v8
+Provide mock test for redis query, Compatible with github.com/go-redis/redis/v9
 
 ## Install
 
-Confirm that you are using redis.Client the version is github.com/go-redis/redis/v8
+Confirm that you are using redis.Client the version is github.com/go-redis/redis/v9
 
 ```go
-go get github.com/go-redis/redismock/v8
+go get github.com/go-redis/redismock/v9
 ```
 
 ## Quick Start

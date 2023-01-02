@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v9"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -595,9 +595,9 @@ var _ = Describe("Commands", func() {
 
 		It("SetEX", func() {
 			operationStatusCmd(clientMock, func() *ExpectedStatus {
-				return clientMock.ExpectSetEX("key", "value", 1*time.Minute)
+				return clientMock.ExpectSetEx("key", "value", 1*time.Minute)
 			}, func() *redis.StatusCmd {
-				return client.SetEX(ctx, "key", "value", 1*time.Minute)
+				return client.SetEx(ctx, "key", "value", 1*time.Minute)
 			})
 		})
 
@@ -784,9 +784,9 @@ var _ = Describe("Commands", func() {
 		})
 
 		It("HGetAll", func() {
-			operationStringStringMapCmd(clientMock, func() *ExpectedStringStringMap {
+			operationMapStringStringCmd(clientMock, func() *ExpectedMapStringString {
 				return clientMock.ExpectHGetAll("key")
-			}, func() *redis.StringStringMapCmd {
+			}, func() *redis.MapStringStringCmd {
 				return client.HGetAll(ctx, "key")
 			})
 		})
@@ -889,9 +889,9 @@ var _ = Describe("Commands", func() {
 
 		It("HRandField", func() {
 			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
-				return clientMock.ExpectHRandField("key", 2, true)
+				return clientMock.ExpectHRandField("key", 2)
 			}, func() *redis.StringSliceCmd {
-				return client.HRandField(ctx, "key", 2, true)
+				return client.HRandField(ctx, "key", 2)
 			})
 		})
 
@@ -1509,22 +1509,6 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
-		It("XTrim", func() {
-			operationIntCmd(clientMock, func() *ExpectedInt {
-				return clientMock.ExpectXTrim("stream", 0)
-			}, func() *redis.IntCmd {
-				return client.XTrim(ctx, "stream", 0) // nolint:staticcheck
-			})
-		})
-
-		It("XTrimApprox", func() {
-			operationIntCmd(clientMock, func() *ExpectedInt {
-				return clientMock.ExpectXTrimApprox("stream", 0)
-			}, func() *redis.IntCmd {
-				return client.XTrimApprox(ctx, "stream", 0) // nolint:staticcheck
-			})
-		})
-
 		It("XTrimMaxLen", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
 				return clientMock.ExpectXTrimMaxLen("stream", 0)
@@ -1607,12 +1591,12 @@ var _ = Describe("Commands", func() {
 
 		It("ZAdd", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
-				return clientMock.ExpectZAdd("zset", &redis.Z{
+				return clientMock.ExpectZAdd("zset", redis.Z{
 					Member: "a",
 					Score:  1,
 				})
 			}, func() *redis.IntCmd {
-				return client.ZAdd(ctx, "zset", &redis.Z{
+				return client.ZAdd(ctx, "zset", redis.Z{
 					Member: "a",
 					Score:  1,
 				})
@@ -1621,12 +1605,12 @@ var _ = Describe("Commands", func() {
 
 		It("ZAddNX", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
-				return clientMock.ExpectZAddNX("zset", &redis.Z{
+				return clientMock.ExpectZAddNX("zset", redis.Z{
 					Score:  1,
 					Member: "one",
 				})
 			}, func() *redis.IntCmd {
-				return client.ZAddNX(ctx, "zset", &redis.Z{
+				return client.ZAddNX(ctx, "zset", redis.Z{
 					Score:  1,
 					Member: "one",
 				})
@@ -1635,54 +1619,12 @@ var _ = Describe("Commands", func() {
 
 		It("ZAddXX", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
-				return clientMock.ExpectZAddXX("zset", &redis.Z{
+				return clientMock.ExpectZAddXX("zset", redis.Z{
 					Score:  1,
 					Member: "one",
 				})
 			}, func() *redis.IntCmd {
-				return client.ZAddXX(ctx, "zset", &redis.Z{
-					Score:  1,
-					Member: "one",
-				})
-			})
-		})
-
-		It("ZAddCh", func() {
-			operationIntCmd(clientMock, func() *ExpectedInt {
-				return clientMock.ExpectZAddCh("zset", &redis.Z{
-					Score:  1,
-					Member: "one",
-				})
-			}, func() *redis.IntCmd {
-				return client.ZAddCh(ctx, "zset", &redis.Z{
-					Score:  1,
-					Member: "one",
-				})
-			})
-		})
-
-		It("ZAddNXCh", func() {
-			operationIntCmd(clientMock, func() *ExpectedInt {
-				return clientMock.ExpectZAddNXCh("zset", &redis.Z{
-					Score:  1,
-					Member: "one",
-				})
-			}, func() *redis.IntCmd {
-				return client.ZAddNXCh(ctx, "zset", &redis.Z{
-					Score:  1,
-					Member: "one",
-				})
-			})
-		})
-
-		It("ZAddXXCh", func() {
-			operationIntCmd(clientMock, func() *ExpectedInt {
-				return clientMock.ExpectZAddXXCh("zset", &redis.Z{
-					Score:  1,
-					Member: "one",
-				})
-			}, func() *redis.IntCmd {
-				return client.ZAddXXCh(ctx, "zset", &redis.Z{
+				return client.ZAddXX(ctx, "zset", redis.Z{
 					Score:  1,
 					Member: "one",
 				})
@@ -1733,48 +1675,6 @@ var _ = Describe("Commands", func() {
 						{Score: 7, Member: "three"},
 						{Score: 5, Member: "four"},
 					},
-				})
-			})
-		})
-
-		It("ZIncr", func() {
-			operationFloatCmd(clientMock, func() *ExpectedFloat {
-				return clientMock.ExpectZIncr("zset", &redis.Z{
-					Score:  1,
-					Member: "one",
-				})
-			}, func() *redis.FloatCmd {
-				return client.ZIncr(ctx, "zset", &redis.Z{
-					Score:  1,
-					Member: "one",
-				})
-			})
-		})
-
-		It("ZIncrNX", func() {
-			operationFloatCmd(clientMock, func() *ExpectedFloat {
-				return clientMock.ExpectZIncrNX("zset", &redis.Z{
-					Score:  1,
-					Member: "one",
-				})
-			}, func() *redis.FloatCmd {
-				return client.ZIncrNX(ctx, "zset", &redis.Z{
-					Score:  1,
-					Member: "one",
-				})
-			})
-		})
-
-		It("ZIncrXX", func() {
-			operationFloatCmd(clientMock, func() *ExpectedFloat {
-				return clientMock.ExpectZIncrXX("zset", &redis.Z{
-					Score:  1,
-					Member: "one",
-				})
-			}, func() *redis.FloatCmd {
-				return client.ZIncrXX(ctx, "zset", &redis.Z{
-					Score:  1,
-					Member: "one",
 				})
 			})
 		})
@@ -2155,9 +2055,9 @@ var _ = Describe("Commands", func() {
 
 		It("ZRandMember", func() {
 			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
-				return clientMock.ExpectZRandMember("key", 3, true)
+				return clientMock.ExpectZRandMember("key", 3)
 			}, func() *redis.StringSliceCmd {
-				return client.ZRandMember(ctx, "key", 3, true)
+				return client.ZRandMember(ctx, "key", 3)
 			})
 		})
 
@@ -2266,9 +2166,9 @@ var _ = Describe("Commands", func() {
 		})
 
 		It("ConfigGet", func() {
-			operationSliceCmd(clientMock, func() *ExpectedSlice {
+			operationMapStringStringCmd(clientMock, func() *ExpectedMapStringString {
 				return clientMock.ExpectConfigGet("*")
-			}, func() *redis.SliceCmd {
+			}, func() *redis.MapStringStringCmd {
 				return client.ConfigGet(ctx, "*")
 			})
 		})
@@ -2486,9 +2386,9 @@ var _ = Describe("Commands", func() {
 		})
 
 		It("PubSubNumSub", func() {
-			operationStringIntMapCmd(clientMock, func() *ExpectedStringIntMap {
+			operationMapStringIntCmd(clientMock, func() *ExpectedMapStringInt {
 				return clientMock.ExpectPubSubNumSub()
-			}, func() *redis.StringIntMapCmd {
+			}, func() *redis.MapStringIntCmd {
 				return client.PubSubNumSub(ctx)
 			})
 		})
