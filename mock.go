@@ -2,7 +2,6 @@ package redismock
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"reflect"
@@ -36,8 +35,6 @@ const (
 	redisClient redisClientType = iota + 1
 	redisCluster
 )
-
-var hookError = errors.New("hook error")
 
 func NewClientMock() (*redis.Client, ClientMock) {
 	m := newMock(redisClient)
