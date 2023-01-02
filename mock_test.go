@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v9"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -310,9 +310,9 @@ func operationScanCmd(base baseMock, expected func() *ExpectedScan, actual func(
 	Expect(cursor).To(Equal(uint64(5)))
 }
 
-func operationStringStringMapCmd(base baseMock, expected func() *ExpectedStringStringMap, actual func() *redis.StringStringMapCmd) {
+func operationMapStringStringCmd(base baseMock, expected func() *ExpectedMapStringString, actual func() *redis.MapStringStringCmd) {
 	var (
-		setErr = errors.New("string string map cmd error")
+		setErr = errors.New("map string string cmd error")
 		val    map[string]string
 		err    error
 	)
@@ -1049,9 +1049,9 @@ func operationBoolSliceCmd(base baseMock, expected func() *ExpectedBoolSlice, ac
 	Expect(val).To(Equal([]bool{true, false, true}))
 }
 
-func operationStringIntMapCmd(base baseMock, expected func() *ExpectedStringIntMap, actual func() *redis.StringIntMapCmd) {
+func operationMapStringIntCmd(base baseMock, expected func() *ExpectedMapStringInt, actual func() *redis.MapStringIntCmd) {
 	var (
-		setErr = errors.New("string int map cmd error")
+		setErr = errors.New("map string int cmd error")
 		val    map[string]int64
 		err    error
 	)

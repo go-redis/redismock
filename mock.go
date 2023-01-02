@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"reflect"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v9"
 )
 
 type mock struct {
@@ -58,15 +59,21 @@ func newMock(typ redisClientType) *mock {
 	switch typ {
 	case redisClient:
 		opt := &redis.Options{MaxRetries: -2}
-		m.factory = redis.NewClient(opt)
+		factory := redis.NewClient(opt)
 		client := redis.NewClient(opt)
+		factory.AddHook(nilHook{})
 		client.AddHook(redisClientHook{fn: m.process})
+
+		m.factory = factory
 		m.client = client
 	case redisCluster:
 		opt := &redis.ClusterOptions{MaxRedirects: -2}
-		m.factory = redis.NewClusterClient(opt)
+		factory := redis.NewClusterClient(opt)
 		clusterClient := redis.NewClusterClient(opt)
-		clusterClient.AddHook(redisClientHook{fn: m.process, returnErr: hookError})
+		factory.AddHook(nilHook{})
+		clusterClient.AddHook(redisClientHook{fn: m.process})
+
+		m.factory = factory
 		m.client = clusterClient
 	}
 	m.strictOrder = true
@@ -74,47 +81,60 @@ func newMock(typ redisClientType) *mock {
 	return m
 }
 
-//----------------------------------
+//------------------------------------------------------------------
 
 type redisClientHook struct {
 	returnErr error
 	fn        func(cmd redis.Cmder) error
 }
 
-func (h redisClientHook) BeforeProcess(ctx context.Context, cmd redis.Cmder) (context.Context, error) {
-	err := h.fn(cmd)
-	if h.returnErr != nil && (err == nil || cmd.Err() == nil) {
-		err = h.returnErr
-	}
-	return ctx, err
+func (redisClientHook) DialHook(hook redis.DialHook) redis.DialHook {
+	return hook
 }
 
-func (h redisClientHook) AfterProcess(_ context.Context, cmd redis.Cmder) error {
-	if h.returnErr != nil && cmd.Err() == h.returnErr {
-		cmd.SetErr(nil)
-	}
-	return nil
-}
-
-func (h redisClientHook) BeforeProcessPipeline(ctx context.Context, cmds []redis.Cmder) (context.Context, error) {
-	for _, cmd := range cmds {
-		if err := h.fn(cmd); err != nil {
-			return ctx, err
+func (h redisClientHook) ProcessHook(_ redis.ProcessHook) redis.ProcessHook {
+	return func(ctx context.Context, cmd redis.Cmder) error {
+		err := h.fn(cmd)
+		if h.returnErr != nil && (err == nil || cmd.Err() == nil) {
+			err = h.returnErr
 		}
+		return err
 	}
-	return ctx, h.returnErr
 }
 
-func (h redisClientHook) AfterProcessPipeline(_ context.Context, cmds []redis.Cmder) error {
-	if h.returnErr == nil {
+func (h redisClientHook) ProcessPipelineHook(_ redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+	return func(ctx context.Context, cmds []redis.Cmder) error {
+		for _, cmd := range cmds {
+			err := h.fn(cmd)
+			if h.returnErr != nil && (err == nil || cmd.Err() == nil) {
+				err = h.returnErr
+			}
+			if err != nil {
+				return err
+			}
+		}
 		return nil
 	}
-	for _, cmd := range cmds {
-		if cmd.Err() == h.returnErr {
-			cmd.SetErr(nil)
-		}
+}
+
+type nilHook struct{}
+
+func (nilHook) DialHook(_ redis.DialHook) redis.DialHook {
+	return func(_ context.Context, _, _ string) (net.Conn, error) {
+		return &net.TCPConn{}, nil
 	}
-	return nil
+}
+
+func (h nilHook) ProcessHook(_ redis.ProcessHook) redis.ProcessHook {
+	return func(_ context.Context, _ redis.Cmder) error {
+		return nil
+	}
+}
+
+func (h nilHook) ProcessPipelineHook(_ redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+	return func(_ context.Context, _ []redis.Cmder) error {
+		return nil
+	}
 }
 
 //----------------------------------
@@ -799,9 +819,9 @@ func (m *mock) ExpectSetArgs(key string, value interface{}, a redis.SetArgs) *Ex
 	return e
 }
 
-func (m *mock) ExpectSetEX(key string, value interface{}, expiration time.Duration) *ExpectedStatus {
+func (m *mock) ExpectSetEx(key string, value interface{}, expiration time.Duration) *ExpectedStatus {
 	e := &ExpectedStatus{}
-	e.cmd = m.factory.SetEX(m.ctx, key, value, expiration)
+	e.cmd = m.factory.SetEx(m.ctx, key, value, expiration)
 	m.pushExpect(e)
 	return e
 }
@@ -960,8 +980,8 @@ func (m *mock) ExpectHGet(key, field string) *ExpectedString {
 	return e
 }
 
-func (m *mock) ExpectHGetAll(key string) *ExpectedStringStringMap {
-	e := &ExpectedStringStringMap{}
+func (m *mock) ExpectHGetAll(key string) *ExpectedMapStringString {
+	e := &ExpectedMapStringString{}
 	e.cmd = m.factory.HGetAll(m.ctx, key)
 	m.pushExpect(e)
 	return e
@@ -1030,9 +1050,9 @@ func (m *mock) ExpectHVals(key string) *ExpectedStringSlice {
 	return e
 }
 
-func (m *mock) ExpectHRandField(key string, count int, withValues bool) *ExpectedStringSlice {
+func (m *mock) ExpectHRandField(key string, count int) *ExpectedStringSlice {
 	e := &ExpectedStringSlice{}
-	e.cmd = m.factory.HRandField(m.ctx, key, count, withValues)
+	e.cmd = m.factory.HRandField(m.ctx, key, count)
 	m.pushExpect(e)
 	return e
 }
@@ -1501,20 +1521,6 @@ func (m *mock) ExpectXAutoClaimJustID(a *redis.XAutoClaimArgs) *ExpectedXAutoCla
 	return e
 }
 
-func (m *mock) ExpectXTrim(key string, maxLen int64) *ExpectedInt {
-	e := &ExpectedInt{}
-	e.cmd = m.factory.XTrim(m.ctx, key, maxLen)
-	m.pushExpect(e)
-	return e
-}
-
-func (m *mock) ExpectXTrimApprox(key string, maxLen int64) *ExpectedInt {
-	e := &ExpectedInt{}
-	e.cmd = m.factory.XTrimApprox(m.ctx, key, maxLen)
-	m.pushExpect(e)
-	return e
-}
-
 func (m *mock) ExpectXTrimMaxLen(key string, maxLen int64) *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.XTrimMaxLen(m.ctx, key, maxLen)
@@ -1587,44 +1593,23 @@ func (m *mock) ExpectBZPopMin(timeout time.Duration, keys ...string) *ExpectedZW
 	return e
 }
 
-func (m *mock) ExpectZAdd(key string, members ...*redis.Z) *ExpectedInt {
+func (m *mock) ExpectZAdd(key string, members ...redis.Z) *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.ZAdd(m.ctx, key, members...)
 	m.pushExpect(e)
 	return e
 }
 
-func (m *mock) ExpectZAddNX(key string, members ...*redis.Z) *ExpectedInt {
+func (m *mock) ExpectZAddNX(key string, members ...redis.Z) *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.ZAddNX(m.ctx, key, members...)
 	m.pushExpect(e)
 	return e
 }
 
-func (m *mock) ExpectZAddXX(key string, members ...*redis.Z) *ExpectedInt {
+func (m *mock) ExpectZAddXX(key string, members ...redis.Z) *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.ZAddXX(m.ctx, key, members...)
-	m.pushExpect(e)
-	return e
-}
-
-func (m *mock) ExpectZAddCh(key string, members ...*redis.Z) *ExpectedInt {
-	e := &ExpectedInt{}
-	e.cmd = m.factory.ZAddCh(m.ctx, key, members...)
-	m.pushExpect(e)
-	return e
-}
-
-func (m *mock) ExpectZAddNXCh(key string, members ...*redis.Z) *ExpectedInt {
-	e := &ExpectedInt{}
-	e.cmd = m.factory.ZAddNXCh(m.ctx, key, members...)
-	m.pushExpect(e)
-	return e
-}
-
-func (m *mock) ExpectZAddXXCh(key string, members ...*redis.Z) *ExpectedInt {
-	e := &ExpectedInt{}
-	e.cmd = m.factory.ZAddXXCh(m.ctx, key, members...)
 	m.pushExpect(e)
 	return e
 }
@@ -1639,27 +1624,6 @@ func (m *mock) ExpectZAddArgs(key string, args redis.ZAddArgs) *ExpectedInt {
 func (m *mock) ExpectZAddArgsIncr(key string, args redis.ZAddArgs) *ExpectedFloat {
 	e := &ExpectedFloat{}
 	e.cmd = m.factory.ZAddArgsIncr(m.ctx, key, args)
-	m.pushExpect(e)
-	return e
-}
-
-func (m *mock) ExpectZIncr(key string, member *redis.Z) *ExpectedFloat {
-	e := &ExpectedFloat{}
-	e.cmd = m.factory.ZIncr(m.ctx, key, member)
-	m.pushExpect(e)
-	return e
-}
-
-func (m *mock) ExpectZIncrNX(key string, member *redis.Z) *ExpectedFloat {
-	e := &ExpectedFloat{}
-	e.cmd = m.factory.ZIncrNX(m.ctx, key, member)
-	m.pushExpect(e)
-	return e
-}
-
-func (m *mock) ExpectZIncrXX(key string, member *redis.Z) *ExpectedFloat {
-	e := &ExpectedFloat{}
-	e.cmd = m.factory.ZIncrXX(m.ctx, key, member)
 	m.pushExpect(e)
 	return e
 }
@@ -1895,9 +1859,9 @@ func (m *mock) ExpectZUnionWithScores(store redis.ZStore) *ExpectedZSlice {
 	return e
 }
 
-func (m *mock) ExpectZRandMember(key string, count int, withScores bool) *ExpectedStringSlice {
+func (m *mock) ExpectZRandMember(key string, count int) *ExpectedStringSlice {
 	e := &ExpectedStringSlice{}
-	e.cmd = m.factory.ZRandMember(m.ctx, key, count, withScores)
+	e.cmd = m.factory.ZRandMember(m.ctx, key, count)
 	m.pushExpect(e)
 	return e
 }
@@ -1995,8 +1959,8 @@ func (m *mock) ExpectClientID() *ExpectedInt {
 	return e
 }
 
-func (m *mock) ExpectConfigGet(parameter string) *ExpectedSlice {
-	e := &ExpectedSlice{}
+func (m *mock) ExpectConfigGet(parameter string) *ExpectedMapStringString {
+	e := &ExpectedMapStringString{}
 	e.cmd = m.factory.ConfigGet(m.ctx, parameter)
 	m.pushExpect(e)
 	return e
@@ -2198,8 +2162,8 @@ func (m *mock) ExpectPubSubChannels(pattern string) *ExpectedStringSlice {
 	return e
 }
 
-func (m *mock) ExpectPubSubNumSub(channels ...string) *ExpectedStringIntMap {
-	e := &ExpectedStringIntMap{}
+func (m *mock) ExpectPubSubNumSub(channels ...string) *ExpectedMapStringInt {
+	e := &ExpectedMapStringInt{}
 	e.cmd = m.factory.PubSubNumSub(m.ctx, channels...)
 	m.pushExpect(e)
 	return e
