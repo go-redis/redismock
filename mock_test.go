@@ -150,6 +150,38 @@ func operationStringSliceCmd(base baseMock, expected func() *ExpectedStringSlice
 	Expect(val).To(Equal([]string{"redis", "move"}))
 }
 
+func operationKeyValueSliceCmd(base baseMock, expected func() *ExpectedKeyValueSlice, actual func() *redis.KeyValueSliceCmd) {
+	var (
+		setErr = errors.New("key value slice cmd error")
+		val    []redis.KeyValue
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.KeyValue(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.KeyValue(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]redis.KeyValue{
+		{Key: "k1", Value: "v1"},
+		{Key: "k2", Value: "v2"},
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal([]redis.KeyValue{
+		{Key: "k1", Value: "v1"},
+		{Key: "k2", Value: "v2"},
+	}))
+}
+
 func operationDurationCmd(base baseMock, expected func() *ExpectedDuration, actual func() *redis.DurationCmd) {
 	var (
 		setErr = errors.New("duration cmd error")
@@ -1239,6 +1271,68 @@ func operationGeoSearchLocationCmd(base baseMock, expected func() *ExpectedGeoSe
 			Latitude:  38.11555639549629859,
 			Dist:      190.4424,
 			GeoHash:   3479099956230698,
+		},
+	}))
+}
+
+func operationSlowLogCmd(base baseMock, expected func() *ExpectedSlowLog, actual func() *redis.SlowLogCmd) {
+	var (
+		setErr = errors.New("slow log cmd error")
+		val    []redis.SlowLog
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.SlowLog(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.SlowLog(nil)))
+
+	now := time.Now()
+	now1 := now.Add(time.Hour)
+	base.ClearExpect()
+	expected().SetVal([]redis.SlowLog{
+		{
+			ID:         1,
+			Time:       now,
+			Duration:   3 * time.Millisecond,
+			Args:       []string{"a", "b", "c"},
+			ClientAddr: "127.0.0.1:1234",
+			ClientName: "client_hi",
+		},
+		{
+			ID:         2,
+			Time:       now1,
+			Duration:   4 * time.Millisecond,
+			Args:       []string{"x", "y", "z"},
+			ClientAddr: "127.0.0.1:6379",
+			ClientName: "client_hi",
+		},
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal([]redis.SlowLog{
+		{
+			ID:         1,
+			Time:       now,
+			Duration:   3 * time.Millisecond,
+			Args:       []string{"a", "b", "c"},
+			ClientAddr: "127.0.0.1:1234",
+			ClientName: "client_hi",
+		},
+		{
+			ID:         2,
+			Time:       now1,
+			Duration:   4 * time.Millisecond,
+			Args:       []string{"x", "y", "z"},
+			ClientAddr: "127.0.0.1:6379",
+			ClientName: "client_hi",
 		},
 	}))
 }

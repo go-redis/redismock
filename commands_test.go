@@ -895,6 +895,14 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("HRandFieldWithValues", func() {
+			operationKeyValueSliceCmd(clientMock, func() *ExpectedKeyValueSlice {
+				return clientMock.ExpectHRandFieldWithValues("key", 2)
+			}, func() *redis.KeyValueSliceCmd {
+				return client.HRandFieldWithValues(ctx, "key", 2)
+			})
+		})
+
 		It("BLPop", func() {
 			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
 				return clientMock.ExpectBLPop(1*time.Second, "key1", "key2")
@@ -1132,6 +1140,14 @@ var _ = Describe("Commands", func() {
 				return clientMock.ExpectSInter()
 			}, func() *redis.StringSliceCmd {
 				return client.SInter(ctx)
+			})
+		})
+
+		It("SInterCard", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectSInterCard(1, "k1", "k2")
+			}, func() *redis.IntCmd {
+				return client.SInterCard(ctx, 1, "k1", "k2")
 			})
 		})
 
@@ -2021,6 +2037,22 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("ZRandMember", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectZRandMember("key", 3)
+			}, func() *redis.StringSliceCmd {
+				return client.ZRandMember(ctx, "key", 3)
+			})
+		})
+
+		It("ZRandMemberWithScores", func() {
+			operationZSliceCmd(clientMock, func() *ExpectedZSlice {
+				return clientMock.ExpectZRandMemberWithScores("key", 3)
+			}, func() *redis.ZSliceCmd {
+				return client.ZRandMemberWithScores(ctx, "key", 3)
+			})
+		})
+
 		It("ZUnion", func() {
 			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
 				return clientMock.ExpectZUnion(redis.ZStore{
@@ -2050,14 +2082,6 @@ var _ = Describe("Commands", func() {
 					Weights:   []float64{11.11, 22.22, 33.33},
 					Aggregate: "sum",
 				})
-			})
-		})
-
-		It("ZRandMember", func() {
-			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
-				return clientMock.ExpectZRandMember("key", 3)
-			}, func() *redis.StringSliceCmd {
-				return client.ZRandMember(ctx, "key", 3)
 			})
 		})
 
@@ -2157,11 +2181,35 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("ClientUnpause", func() {
+			operationBoolCmd(clientMock, func() *ExpectedBool {
+				return clientMock.ExpectClientUnpause()
+			}, func() *redis.BoolCmd {
+				return client.ClientUnpause(ctx)
+			})
+		})
+
 		It("ClientID", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
 				return clientMock.ExpectClientID()
 			}, func() *redis.IntCmd {
 				return client.ClientID(ctx)
+			})
+		})
+
+		It("ClientUnblock", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectClientUnblock(2)
+			}, func() *redis.IntCmd {
+				return client.ClientUnblock(ctx, 2)
+			})
+		})
+
+		It("ClientUnblockWithError", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectClientUnblockWithError(3)
+			}, func() *redis.IntCmd {
+				return client.ClientUnblockWithError(ctx, 3)
 			})
 		})
 
@@ -2281,6 +2329,14 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("SlowLogGet", func() {
+			operationSlowLogCmd(clientMock, func() *ExpectedSlowLog {
+				return clientMock.ExpectSlowLogGet(4)
+			}, func() *redis.SlowLogCmd {
+				return client.SlowLogGet(ctx, 4)
+			})
+		})
+
 		It("Time", func() {
 			operationTimeCmd(clientMock, func() *ExpectedTime {
 				return clientMock.ExpectTime()
@@ -2337,6 +2393,22 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("EvalRO", func() {
+			operationCmdCmd(clientMock, func() *ExpectedCmd {
+				return clientMock.ExpectEvalRO("script", []string{"key1", "key2"}, "args1", "args2")
+			}, func() *redis.Cmd {
+				return client.EvalRO(ctx, "script", []string{"key1", "key2"}, "args1", "args2")
+			})
+		})
+
+		It("EvalShaRO", func() {
+			operationCmdCmd(clientMock, func() *ExpectedCmd {
+				return clientMock.ExpectEvalShaRO("sha", []string{"key1", "key2"}, "args1", "args2")
+			}, func() *redis.Cmd {
+				return client.EvalShaRO(ctx, "sha", []string{"key1", "key2"}, "args1", "args2")
+			})
+		})
+
 		It("ScriptExists", func() {
 			operationBoolSliceCmd(clientMock, func() *ExpectedBoolSlice {
 				return clientMock.ExpectScriptExists()
@@ -2377,6 +2449,14 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("SPublish", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectSPublish("channel", "message")
+			}, func() *redis.IntCmd {
+				return client.SPublish(ctx, "channel", "message")
+			})
+		})
+
 		It("PubSubChannels", func() {
 			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
 				return clientMock.ExpectPubSubChannels("pattern")
@@ -2398,6 +2478,22 @@ var _ = Describe("Commands", func() {
 				return clientMock.ExpectPubSubNumPat()
 			}, func() *redis.IntCmd {
 				return client.PubSubNumPat(ctx)
+			})
+		})
+
+		It("PubSubShardChannels", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectPubSubShardChannels("pattern")
+			}, func() *redis.StringSliceCmd {
+				return client.PubSubShardChannels(ctx, "pattern")
+			})
+		})
+
+		It("PubSubShardNumSub", func() {
+			operationMapStringIntCmd(clientMock, func() *ExpectedMapStringInt {
+				return clientMock.ExpectPubSubShardNumSub("c1", "c2")
+			}, func() *redis.MapStringIntCmd {
+				return client.PubSubShardNumSub(ctx, "c1", "c2")
 			})
 		})
 

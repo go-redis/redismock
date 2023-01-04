@@ -1054,6 +1054,13 @@ func (m *mock) ExpectHRandField(key string, count int) *ExpectedStringSlice {
 	return e
 }
 
+func (m *mock) ExpectHRandFieldWithValues(key string, count int) *ExpectedKeyValueSlice {
+	e := &ExpectedKeyValueSlice{}
+	e.cmd = m.factory.HRandFieldWithValues(m.ctx, key, count)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectBLPop(timeout time.Duration, keys ...string) *ExpectedStringSlice {
 	e := &ExpectedStringSlice{}
 	e.cmd = m.factory.BLPop(m.ctx, timeout, keys...)
@@ -1262,6 +1269,13 @@ func (m *mock) ExpectSDiffStore(destination string, keys ...string) *ExpectedInt
 func (m *mock) ExpectSInter(keys ...string) *ExpectedStringSlice {
 	e := &ExpectedStringSlice{}
 	e.cmd = m.factory.SInter(m.ctx, keys...)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectSInterCard(limit int64, keys ...string) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.SInterCard(m.ctx, limit, keys...)
 	m.pushExpect(e)
 	return e
 }
@@ -1842,6 +1856,20 @@ func (m *mock) ExpectZUnionStore(dest string, store *redis.ZStore) *ExpectedInt 
 	return e
 }
 
+func (m *mock) ExpectZRandMember(key string, count int) *ExpectedStringSlice {
+	e := &ExpectedStringSlice{}
+	e.cmd = m.factory.ZRandMember(m.ctx, key, count)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectZRandMemberWithScores(key string, count int) *ExpectedZSlice {
+	e := &ExpectedZSlice{}
+	e.cmd = m.factory.ZRandMemberWithScores(m.ctx, key, count)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectZUnion(store redis.ZStore) *ExpectedStringSlice {
 	e := &ExpectedStringSlice{}
 	e.cmd = m.factory.ZUnion(m.ctx, store)
@@ -1852,13 +1880,6 @@ func (m *mock) ExpectZUnion(store redis.ZStore) *ExpectedStringSlice {
 func (m *mock) ExpectZUnionWithScores(store redis.ZStore) *ExpectedZSlice {
 	e := &ExpectedZSlice{}
 	e.cmd = m.factory.ZUnionWithScores(m.ctx, store)
-	m.pushExpect(e)
-	return e
-}
-
-func (m *mock) ExpectZRandMember(key string, count int) *ExpectedStringSlice {
-	e := &ExpectedStringSlice{}
-	e.cmd = m.factory.ZRandMember(m.ctx, key, count)
 	m.pushExpect(e)
 	return e
 }
@@ -1949,9 +1970,30 @@ func (m *mock) ExpectClientPause(dur time.Duration) *ExpectedBool {
 	return e
 }
 
+func (m *mock) ExpectClientUnpause() *ExpectedBool {
+	e := &ExpectedBool{}
+	e.cmd = m.factory.ClientUnpause(m.ctx)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectClientID() *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.ClientID(m.ctx)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectClientUnblock(id int64) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.ClientUnblock(m.ctx, id)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectClientUnblockWithError(id int64) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.ClientUnblockWithError(m.ctx, id)
 	m.pushExpect(e)
 	return e
 }
@@ -2068,6 +2110,13 @@ func (m *mock) ExpectSlaveOf(host, port string) *ExpectedStatus {
 	return e
 }
 
+func (m *mock) ExpectSlowLogGet(num int64) *ExpectedSlowLog {
+	e := &ExpectedSlowLog{}
+	e.cmd = m.factory.SlowLogGet(m.ctx, num)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectTime() *ExpectedTime {
 	e := &ExpectedTime{}
 	e.cmd = m.factory.Time(m.ctx)
@@ -2117,6 +2166,20 @@ func (m *mock) ExpectEvalSha(sha1 string, keys []string, args ...interface{}) *E
 	return e
 }
 
+func (m *mock) ExpectEvalRO(script string, keys []string, args ...interface{}) *ExpectedCmd {
+	e := &ExpectedCmd{}
+	e.cmd = m.factory.EvalRO(m.ctx, script, keys, args...)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectEvalShaRO(sha1 string, keys []string, args ...interface{}) *ExpectedCmd {
+	e := &ExpectedCmd{}
+	e.cmd = m.factory.EvalShaRO(m.ctx, sha1, keys, args...)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectScriptExists(hashes ...string) *ExpectedBoolSlice {
 	e := &ExpectedBoolSlice{}
 	e.cmd = m.factory.ScriptExists(m.ctx, hashes...)
@@ -2152,6 +2215,13 @@ func (m *mock) ExpectPublish(channel string, message interface{}) *ExpectedInt {
 	return e
 }
 
+func (m *mock) ExpectSPublish(channel string, message interface{}) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.SPublish(m.ctx, channel, message)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectPubSubChannels(pattern string) *ExpectedStringSlice {
 	e := &ExpectedStringSlice{}
 	e.cmd = m.factory.PubSubChannels(m.ctx, pattern)
@@ -2169,6 +2239,20 @@ func (m *mock) ExpectPubSubNumSub(channels ...string) *ExpectedMapStringInt {
 func (m *mock) ExpectPubSubNumPat() *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.PubSubNumPat(m.ctx)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectPubSubShardChannels(pattern string) *ExpectedStringSlice {
+	e := &ExpectedStringSlice{}
+	e.cmd = m.factory.PubSubShardChannels(m.ctx, pattern)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectPubSubShardNumSub(channels ...string) *ExpectedMapStringInt {
+	e := &ExpectedMapStringInt{}
+	e.cmd = m.factory.PubSubShardNumSub(m.ctx, channels...)
 	m.pushExpect(e)
 	return e
 }
