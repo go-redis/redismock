@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis/v9"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/redis/go-redis/v9"
 )
 
 var _ = Describe("Client", func() {
