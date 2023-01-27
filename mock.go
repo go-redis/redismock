@@ -669,6 +669,13 @@ func (m *mock) ExpectSort(key string, sort *redis.Sort) *ExpectedStringSlice {
 	return e
 }
 
+func (m *mock) ExpectSortRO(key string, sort *redis.Sort) *ExpectedStringSlice {
+	e := &ExpectedStringSlice{}
+	e.cmd = m.factory.SortRO(m.ctx, key, sort)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectSortStore(key, store string, sort *redis.Sort) *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.SortStore(m.ctx, key, store, sort)
@@ -1677,6 +1684,13 @@ func (m *mock) ExpectZInter(store *redis.ZStore) *ExpectedStringSlice {
 func (m *mock) ExpectZInterWithScores(store *redis.ZStore) *ExpectedZSlice {
 	e := &ExpectedZSlice{}
 	e.cmd = m.factory.ZInterWithScores(m.ctx, store)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectZInterCard(limit int64, keys ...string) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.ZInterCard(m.ctx, limit, keys...)
 	m.pushExpect(e)
 	return e
 }
