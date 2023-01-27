@@ -332,6 +332,22 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("SortRO", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectSortRO("key", &redis.Sort{
+					Offset: 0,
+					Count:  2,
+					Order:  "ASC",
+				})
+			}, func() *redis.StringSliceCmd {
+				return client.SortRO(ctx, "key", &redis.Sort{
+					Offset: 0,
+					Count:  2,
+					Order:  "ASC",
+				})
+			})
+		})
+
 		It("SortStore", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
 				return clientMock.ExpectSortStore("key", "store", &redis.Sort{
@@ -1756,6 +1772,14 @@ var _ = Describe("Commands", func() {
 					Weights:   []float64{123.123, 456.456, 789.789},
 					Aggregate: "sum",
 				})
+			})
+		})
+
+		It("ZInterCard", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectZInterCard(3, "key1", "key2")
+			}, func() *redis.IntCmd {
+				return client.ZInterCard(ctx, 3, "key1", "key2")
 			})
 		})
 

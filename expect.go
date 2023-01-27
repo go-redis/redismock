@@ -59,6 +59,7 @@ type baseMock interface {
 	ExpectRestore(key string, ttl time.Duration, value string) *ExpectedStatus
 	ExpectRestoreReplace(key string, ttl time.Duration, value string) *ExpectedStatus
 	ExpectSort(key string, sort *redis.Sort) *ExpectedStringSlice
+	ExpectSortRO(key string, sort *redis.Sort) *ExpectedStringSlice
 	ExpectSortStore(key, store string, sort *redis.Sort) *ExpectedInt
 	ExpectSortInterfaces(key string, sort *redis.Sort) *ExpectedSlice
 	ExpectTouch(keys ...string) *ExpectedInt
@@ -211,6 +212,7 @@ type baseMock interface {
 	ExpectZIncrBy(key string, increment float64, member string) *ExpectedFloat
 	ExpectZInter(store *redis.ZStore) *ExpectedStringSlice
 	ExpectZInterWithScores(store *redis.ZStore) *ExpectedZSlice
+	ExpectZInterCard(limit int64, keys ...string) *ExpectedInt
 	ExpectZInterStore(destination string, store *redis.ZStore) *ExpectedInt
 	ExpectZMScore(key string, members ...string) *ExpectedFloatSlice
 	ExpectZPopMax(key string, count ...int64) *ExpectedZSlice
