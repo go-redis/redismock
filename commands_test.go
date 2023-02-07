@@ -163,6 +163,14 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("ExpireTime", func() {
+			operationDurationCmd(clientMock, func() *ExpectedDuration {
+				return clientMock.ExpectExpireTime("key")
+			}, func() *redis.DurationCmd {
+				return client.ExpireTime(ctx, "key")
+			})
+		})
+
 		It("ExpireNX", func() {
 			operationBoolCmd(clientMock, func() *ExpectedBool {
 				return clientMock.ExpectExpireNX("key", 2*time.Second)
@@ -265,6 +273,14 @@ var _ = Describe("Commands", func() {
 				return clientMock.ExpectPExpireAt("key", now.Add(10*time.Minute))
 			}, func() *redis.BoolCmd {
 				return client.PExpireAt(ctx, "key", now.Add(10*time.Minute))
+			})
+		})
+
+		It("PExpireTime", func() {
+			operationDurationCmd(clientMock, func() *ExpectedDuration {
+				return clientMock.ExpectPExpireTime("key")
+			}, func() *redis.DurationCmd {
+				return client.PExpireTime(ctx, "key")
 			})
 		})
 
