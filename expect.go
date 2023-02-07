@@ -39,6 +39,7 @@ type baseMock interface {
 	ExpectExists(keys ...string) *ExpectedInt
 	ExpectExpire(key string, expiration time.Duration) *ExpectedBool
 	ExpectExpireAt(key string, tm time.Time) *ExpectedBool
+	ExpectExpireTime(key string) *ExpectedDuration
 	ExpectExpireNX(key string, expiration time.Duration) *ExpectedBool
 	ExpectExpireXX(key string, expiration time.Duration) *ExpectedBool
 	ExpectExpireGT(key string, expiration time.Duration) *ExpectedBool
@@ -52,6 +53,7 @@ type baseMock interface {
 	ExpectPersist(key string) *ExpectedBool
 	ExpectPExpire(key string, expiration time.Duration) *ExpectedBool
 	ExpectPExpireAt(key string, tm time.Time) *ExpectedBool
+	ExpectPExpireTime(key string) *ExpectedDuration
 	ExpectPTTL(key string) *ExpectedDuration
 	ExpectRandomKey() *ExpectedString
 	ExpectRename(key, newkey string) *ExpectedStatus

@@ -529,6 +529,13 @@ func (m *mock) ExpectExpireAt(key string, tm time.Time) *ExpectedBool {
 	return e
 }
 
+func (m *mock) ExpectExpireTime(key string) *ExpectedDuration {
+	e := &ExpectedDuration{}
+	e.cmd = m.factory.ExpireTime(m.ctx, key)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectExpireNX(key string, expiration time.Duration) *ExpectedBool {
 	e := &ExpectedBool{}
 	e.cmd = m.factory.ExpireNX(m.ctx, key, expiration)
@@ -616,6 +623,13 @@ func (m *mock) ExpectPExpire(key string, expiration time.Duration) *ExpectedBool
 func (m *mock) ExpectPExpireAt(key string, tm time.Time) *ExpectedBool {
 	e := &ExpectedBool{}
 	e.cmd = m.factory.PExpireAt(m.ctx, key, tm)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectPExpireTime(key string) *ExpectedDuration {
+	e := &ExpectedDuration{}
+	e.cmd = m.factory.PExpireTime(m.ctx, key)
 	m.pushExpect(e)
 	return e
 }
