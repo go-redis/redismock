@@ -123,6 +123,7 @@ type baseMock interface {
 	ExpectHRandFieldWithValues(key string, count int) *ExpectedKeyValueSlice
 
 	ExpectBLPop(timeout time.Duration, keys ...string) *ExpectedStringSlice
+	ExpectBLMPop(timeout time.Duration, direction string, count int64, keys ...string) *ExpectedKeyValues
 	ExpectBRPop(timeout time.Duration, keys ...string) *ExpectedStringSlice
 	ExpectBRPopLPush(source, destination string, timeout time.Duration) *ExpectedString
 	ExpectLIndex(key string, index int64) *ExpectedString
@@ -132,6 +133,7 @@ type baseMock interface {
 	ExpectLLen(key string) *ExpectedInt
 	ExpectLPop(key string) *ExpectedString
 	ExpectLPopCount(key string, count int) *ExpectedStringSlice
+	ExpectLMPop(direction string, count int64, keys ...string) *ExpectedKeyValues
 	ExpectLPos(key string, value string, args redis.LPosArgs) *ExpectedInt
 	ExpectLPosCount(key string, value string, count int64, args redis.LPosArgs) *ExpectedIntSlice
 	ExpectLPush(key string, values ...interface{}) *ExpectedInt
@@ -1104,6 +1106,27 @@ func (cmd *ExpectedGeoSearchLocation) SetVal(val []redis.GeoLocation) {
 }
 
 func (cmd *ExpectedGeoSearchLocation) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedKeyValues struct {
+	expectedBase
+
+	key string
+	val []string
+}
+
+func (cmd *ExpectedKeyValues) SetVal(key string, val []string) {
+	cmd.setVal = true
+	cmd.key = key
+	cmd.val = make([]string, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedKeyValues) inflow(c redis.Cmder) {
+	inflow(c, "key", cmd.key)
 	inflow(c, "val", cmd.val)
 }
 

@@ -1089,6 +1089,13 @@ func (m *mock) ExpectBLPop(timeout time.Duration, keys ...string) *ExpectedStrin
 	return e
 }
 
+func (m *mock) ExpectBLMPop(timeout time.Duration, direction string, count int64, keys ...string) *ExpectedKeyValues {
+	e := &ExpectedKeyValues{}
+	e.cmd = m.factory.BLMPop(m.ctx, timeout, direction, count, keys...)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectBRPop(timeout time.Duration, keys ...string) *ExpectedStringSlice {
 	e := &ExpectedStringSlice{}
 	e.cmd = m.factory.BRPop(m.ctx, timeout, keys...)
@@ -1148,6 +1155,13 @@ func (m *mock) ExpectLPop(key string) *ExpectedString {
 func (m *mock) ExpectLPopCount(key string, count int) *ExpectedStringSlice {
 	e := &ExpectedStringSlice{}
 	e.cmd = m.factory.LPopCount(m.ctx, key, count)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectLMPop(direction string, count int64, keys ...string) *ExpectedKeyValues {
+	e := &ExpectedKeyValues{}
+	e.cmd = m.factory.LMPop(m.ctx, direction, count, keys...)
 	m.pushExpect(e)
 	return e
 }

@@ -1336,3 +1336,33 @@ func operationSlowLogCmd(base baseMock, expected func() *ExpectedSlowLog, actual
 		},
 	}))
 }
+
+func operationKeyValuesCmd(base baseMock, expected func() *ExpectedKeyValues, actual func() *redis.KeyValuesCmd) {
+	var (
+		setErr = errors.New("key values cmd error")
+		key    string
+		val    []string
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	key, val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(key).To(Equal(""))
+	Expect(val).To(Equal([]string(nil)))
+
+	base.ClearExpect()
+	expected()
+	key, val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(key).To(Equal(""))
+	Expect(val).To(Equal([]string(nil)))
+
+	base.ClearExpect()
+	expected().SetVal("key1", []string{"v1", "v2"})
+	key, val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(key).To(Equal("key1"))
+	Expect(val).To(Equal([]string{"v1", "v2"}))
+}

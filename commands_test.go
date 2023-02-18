@@ -943,6 +943,14 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("BLMPop", func() {
+			operationKeyValuesCmd(clientMock, func() *ExpectedKeyValues {
+				return clientMock.ExpectBLMPop(1*time.Second, "left", 3, "key1", "key2")
+			}, func() *redis.KeyValuesCmd {
+				return client.BLMPop(ctx, 1*time.Second, "left", 3, "key1", "key2")
+			})
+		})
+
 		It("BRPop", func() {
 			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
 				return clientMock.ExpectBRPop(1*time.Second, "key1", "key2")
@@ -1012,6 +1020,14 @@ var _ = Describe("Commands", func() {
 				return clientMock.ExpectLPopCount("key", 3)
 			}, func() *redis.StringSliceCmd {
 				return client.LPopCount(ctx, "key", 3)
+			})
+		})
+
+		It("LMPop", func() {
+			operationKeyValuesCmd(clientMock, func() *ExpectedKeyValues {
+				return clientMock.ExpectLMPop("left", 3, "key1", "key2")
+			}, func() *redis.KeyValuesCmd {
+				return client.LMPop(ctx, "left", 3, "key1", "key2")
 			})
 		})
 
