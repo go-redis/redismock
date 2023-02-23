@@ -1366,3 +1366,39 @@ func operationKeyValuesCmd(base baseMock, expected func() *ExpectedKeyValues, ac
 	Expect(key).To(Equal("key1"))
 	Expect(val).To(Equal([]string{"v1", "v2"}))
 }
+
+func operationZSliceWithKeyCmd(base baseMock, expected func() *ExpectedZSliceWithKey, actual func() *redis.ZSliceWithKeyCmd) {
+	var (
+		setErr = errors.New("z slice with key cmd error")
+		key    string
+		val    []redis.Z
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	key, val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(key).To(Equal(""))
+	Expect(val).To(Equal([]redis.Z(nil)))
+
+	base.ClearExpect()
+	expected()
+	key, val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(key).To(Equal(""))
+	Expect(val).To(Equal([]redis.Z(nil)))
+
+	base.ClearExpect()
+	expected().SetVal("key1", []redis.Z{
+		{Score: 100, Member: "one"},
+		{Score: 200, Member: "two"},
+	})
+	key, val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(key).To(Equal("key1"))
+	Expect(val).To(Equal([]redis.Z{
+		{Score: 100, Member: "one"},
+		{Score: 200, Member: "two"},
+	}))
+}

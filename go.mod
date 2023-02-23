@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.25.0
-	github.com/redis/go-redis/v9 v9.0.3-0.20230217130544-3b5361dc1067
+	github.com/redis/go-redis/v9 v9.0.3-0.20230223112541-6045d2e4561c
 )
 
 require (
