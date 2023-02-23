@@ -204,6 +204,7 @@ type baseMock interface {
 
 	ExpectBZPopMax(timeout time.Duration, keys ...string) *ExpectedZWithKey
 	ExpectBZPopMin(timeout time.Duration, keys ...string) *ExpectedZWithKey
+	ExpectBZMPop(timeout time.Duration, order string, count int64, keys ...string) *ExpectedZSliceWithKey
 
 	ExpectZAdd(key string, members ...redis.Z) *ExpectedInt
 	ExpectZAddNX(key string, members ...redis.Z) *ExpectedInt
@@ -218,6 +219,7 @@ type baseMock interface {
 	ExpectZInterWithScores(store *redis.ZStore) *ExpectedZSlice
 	ExpectZInterCard(limit int64, keys ...string) *ExpectedInt
 	ExpectZInterStore(destination string, store *redis.ZStore) *ExpectedInt
+	ExpectZMPop(order string, count int64, keys ...string) *ExpectedZSliceWithKey
 	ExpectZMScore(key string, members ...string) *ExpectedFloatSlice
 	ExpectZPopMax(key string, count ...int64) *ExpectedZSlice
 	ExpectZPopMin(key string, count ...int64) *ExpectedZSlice
@@ -1126,6 +1128,27 @@ func (cmd *ExpectedKeyValues) SetVal(key string, val []string) {
 }
 
 func (cmd *ExpectedKeyValues) inflow(c redis.Cmder) {
+	inflow(c, "key", cmd.key)
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedZSliceWithKey struct {
+	expectedBase
+
+	key string
+	val []redis.Z
+}
+
+func (cmd *ExpectedZSliceWithKey) SetVal(key string, val []redis.Z) {
+	cmd.setVal = true
+	cmd.key = key
+	cmd.val = make([]redis.Z, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedZSliceWithKey) inflow(c redis.Cmder) {
 	inflow(c, "key", cmd.key)
 	inflow(c, "val", cmd.val)
 }

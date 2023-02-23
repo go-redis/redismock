@@ -1639,6 +1639,13 @@ func (m *mock) ExpectBZPopMin(timeout time.Duration, keys ...string) *ExpectedZW
 	return e
 }
 
+func (m *mock) ExpectBZMPop(timeout time.Duration, order string, count int64, keys ...string) *ExpectedZSliceWithKey {
+	e := &ExpectedZSliceWithKey{}
+	e.cmd = m.factory.BZMPop(m.ctx, timeout, order, count, keys...)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectZAdd(key string, members ...redis.Z) *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.ZAdd(m.ctx, key, members...)
@@ -1726,6 +1733,13 @@ func (m *mock) ExpectZInterCard(limit int64, keys ...string) *ExpectedInt {
 func (m *mock) ExpectZInterStore(destination string, store *redis.ZStore) *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.ZInterStore(m.ctx, destination, store)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectZMPop(order string, count int64, keys ...string) *ExpectedZSliceWithKey {
+	e := &ExpectedZSliceWithKey{}
+	e.cmd = m.factory.ZMPop(m.ctx, order, count, keys...)
 	m.pushExpect(e)
 	return e
 }

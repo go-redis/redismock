@@ -1653,6 +1653,14 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("BZMPop", func() {
+			operationZSliceWithKeyCmd(clientMock, func() *ExpectedZSliceWithKey {
+				return clientMock.ExpectBZMPop(time.Minute, "max", 3, "key1", "key2")
+			}, func() *redis.ZSliceWithKeyCmd {
+				return client.BZMPop(ctx, time.Minute, "max", 3, "key1", "key2")
+			})
+		})
+
 		It("ZAdd", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
 				return clientMock.ExpectZAdd("zset", redis.Z{
@@ -1826,6 +1834,14 @@ var _ = Describe("Commands", func() {
 					Keys:    []string{"zset1", "zset2"},
 					Weights: []float64{2, 3},
 				})
+			})
+		})
+
+		It("ZMPop", func() {
+			operationZSliceWithKeyCmd(clientMock, func() *ExpectedZSliceWithKey {
+				return clientMock.ExpectZMPop("min", 3, "key1", "key2")
+			}, func() *redis.ZSliceWithKeyCmd {
+				return client.ZMPop(ctx, "min", 3, "key1", "key2")
 			})
 		})
 
