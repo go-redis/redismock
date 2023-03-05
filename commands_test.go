@@ -1675,6 +1675,34 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("ZAddLT", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectZAddLT("zset", redis.Z{
+					Member: "a",
+					Score:  1,
+				})
+			}, func() *redis.IntCmd {
+				return client.ZAddLT(ctx, "zset", redis.Z{
+					Member: "a",
+					Score:  1,
+				})
+			})
+		})
+
+		It("ZAddGT", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectZAddGT("zset", redis.Z{
+					Member: "a",
+					Score:  1,
+				})
+			}, func() *redis.IntCmd {
+				return client.ZAddGT(ctx, "zset", redis.Z{
+					Member: "a",
+					Score:  1,
+				})
+			})
+		})
+
 		It("ZAddNX", func() {
 			operationIntCmd(clientMock, func() *ExpectedInt {
 				return clientMock.ExpectZAddNX("zset", redis.Z{
