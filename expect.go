@@ -207,6 +207,8 @@ type baseMock interface {
 	ExpectBZMPop(timeout time.Duration, order string, count int64, keys ...string) *ExpectedZSliceWithKey
 
 	ExpectZAdd(key string, members ...redis.Z) *ExpectedInt
+	ExpectZAddLT(key string, members ...redis.Z) *ExpectedInt
+	ExpectZAddGT(key string, members ...redis.Z) *ExpectedInt
 	ExpectZAddNX(key string, members ...redis.Z) *ExpectedInt
 	ExpectZAddXX(key string, members ...redis.Z) *ExpectedInt
 	ExpectZAddArgs(key string, args redis.ZAddArgs) *ExpectedInt

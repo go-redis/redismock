@@ -1653,6 +1653,20 @@ func (m *mock) ExpectZAdd(key string, members ...redis.Z) *ExpectedInt {
 	return e
 }
 
+func (m *mock) ExpectZAddLT(key string, members ...redis.Z) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.ZAddLT(m.ctx, key, members...)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectZAddGT(key string, members ...redis.Z) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.ZAddGT(m.ctx, key, members...)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectZAddNX(key string, members ...redis.Z) *ExpectedInt {
 	e := &ExpectedInt{}
 	e.cmd = m.factory.ZAddNX(m.ctx, key, members...)
