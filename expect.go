@@ -339,6 +339,15 @@ type baseMock interface {
 	ExpectGeoSearchStore(key, store string, q *redis.GeoSearchStoreQuery) *ExpectedInt
 	ExpectGeoDist(key string, member1, member2, unit string) *ExpectedFloat
 	ExpectGeoHash(key string, members ...string) *ExpectedStringSlice
+
+	ExpectFunctionLoad(code string) *ExpectedString
+	ExpectFunctionLoadReplace(code string) *ExpectedString
+	ExpectFunctionDelete(libName string) *ExpectedString
+	ExpectFunctionFlush() *ExpectedString
+	ExpectFunctionFlushAsync() *ExpectedString
+	ExpectFunctionList(q redis.FunctionListQuery) *ExpectedFunctionList
+	ExpectFunctionDump() *ExpectedString
+	ExpectFunctionRestore(libDump string) *ExpectedString
 }
 
 type pipelineMock interface {
@@ -1170,6 +1179,24 @@ func (cmd *ExpectedSlowLog) SetVal(val []redis.SlowLog) {
 }
 
 func (cmd *ExpectedSlowLog) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedFunctionList struct {
+	expectedBase
+
+	val []redis.Library
+}
+
+func (cmd *ExpectedFunctionList) SetVal(val []redis.Library) {
+	cmd.setVal = true
+	cmd.val = make([]redis.Library, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedFunctionList) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
