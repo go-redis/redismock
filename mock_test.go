@@ -1402,3 +1402,61 @@ func operationZSliceWithKeyCmd(base baseMock, expected func() *ExpectedZSliceWit
 		{Score: 200, Member: "two"},
 	}))
 }
+
+func operationFunctionListCmd(base baseMock, expected func() *ExpectedFunctionList, actual func() *redis.FunctionListCmd) {
+	var (
+		setErr = errors.New("function list cmd error")
+		val    []redis.Library
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.Library(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.Library(nil)))
+
+	libs := []redis.Library{
+		{
+			Name:   "lib1",
+			Engine: "LUA",
+			Functions: []redis.Function{
+				{
+					Name:        "lib1func1",
+					Description: "lib1 func1 desc",
+					Flags:       []string{"no-writes", "allow-stale"},
+				},
+			},
+			Code: "test code 1",
+		},
+		{
+			Name:   "lib2",
+			Engine: "LUA",
+			Functions: []redis.Function{
+				{
+					Name:        "lib2func1",
+					Description: "lib1 func1 desc",
+					Flags:       []string{"no-writes", "allow-stale"},
+				},
+				{
+					Name:        "lib2func2",
+					Description: "lib2 func2 desc",
+					Flags:       []string{"no-writes"},
+				},
+			},
+			Code: "test code 2",
+		},
+	}
+
+	base.ClearExpect()
+	expected().SetVal(libs)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(libs))
+}

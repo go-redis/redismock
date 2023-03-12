@@ -2953,6 +2953,78 @@ var _ = Describe("Commands", func() {
 				return client.GeoHash(ctx, "Sicily", "Palermo", "Catania")
 			})
 		})
+
+		// ------------------------------------------------------------------------------------------
+
+		It("FunctionLoad", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectFunctionLoad("code")
+			}, func() *redis.StringCmd {
+				return client.FunctionLoad(ctx, "code")
+			})
+		})
+
+		It("FunctionLoadReplace", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectFunctionLoadReplace("code")
+			}, func() *redis.StringCmd {
+				return client.FunctionLoadReplace(ctx, "code")
+			})
+		})
+
+		It("FunctionDelete", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectFunctionDelete("libName")
+			}, func() *redis.StringCmd {
+				return client.FunctionDelete(ctx, "libName")
+			})
+		})
+
+		It("FunctionFlush", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectFunctionFlush()
+			}, func() *redis.StringCmd {
+				return client.FunctionFlush(ctx)
+			})
+		})
+
+		It("FunctionFlushAsync", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectFunctionFlushAsync()
+			}, func() *redis.StringCmd {
+				return client.FunctionFlushAsync(ctx)
+			})
+		})
+
+		It("FunctionList", func() {
+			operationFunctionListCmd(clientMock, func() *ExpectedFunctionList {
+				return clientMock.ExpectFunctionList(redis.FunctionListQuery{
+					LibraryNamePattern: "lib*",
+					WithCode:           true,
+				})
+			}, func() *redis.FunctionListCmd {
+				return client.FunctionList(ctx, redis.FunctionListQuery{
+					LibraryNamePattern: "lib*",
+					WithCode:           true,
+				})
+			})
+		})
+
+		It("FunctionDump", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectFunctionDump()
+			}, func() *redis.StringCmd {
+				return client.FunctionDump(ctx)
+			})
+		})
+
+		It("FunctionRestore", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectFunctionRestore("lib dump")
+			}, func() *redis.StringCmd {
+				return client.FunctionRestore(ctx, "lib dump")
+			})
+		})
 	}
 
 	Describe("client", func() {

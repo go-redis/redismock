@@ -2540,3 +2540,61 @@ func (m *mock) ExpectGeoHash(key string, members ...string) *ExpectedStringSlice
 	m.pushExpect(e)
 	return e
 }
+
+// ----------------------------------------------------------------------------------------------------
+
+func (m *mock) ExpectFunctionLoad(code string) *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.FunctionLoad(m.ctx, code)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectFunctionLoadReplace(code string) *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.FunctionLoadReplace(m.ctx, code)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectFunctionDelete(libName string) *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.FunctionDelete(m.ctx, libName)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectFunctionFlush() *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.FunctionFlush(m.ctx)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectFunctionFlushAsync() *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.FunctionFlushAsync(m.ctx)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectFunctionList(q redis.FunctionListQuery) *ExpectedFunctionList {
+	e := &ExpectedFunctionList{}
+	e.cmd = m.factory.FunctionList(m.ctx, q)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectFunctionDump() *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.FunctionDump(m.ctx)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectFunctionRestore(libDump string) *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.FunctionRestore(m.ctx, libDump)
+	m.pushExpect(e)
+	return e
+}
