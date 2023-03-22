@@ -86,6 +86,22 @@ var _ = Describe("Commands", func() {
 			Expect(cmd.StepCount).To(Equal(int8(1)))
 		})
 
+		It("CommandList", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectCommandList(&redis.FilterBy{
+					Module:  "mod",
+					ACLCat:  "acl",
+					Pattern: "a*",
+				})
+			}, func() *redis.StringSliceCmd {
+				return client.CommandList(ctx, &redis.FilterBy{
+					Module:  "mod",
+					ACLCat:  "acl",
+					Pattern: "a*",
+				})
+			})
+		})
+
 		It("ClientGetName", func() {
 			operationStringCmd(clientMock, func() *ExpectedString {
 				return clientMock.ExpectClientGetName()
