@@ -459,6 +459,13 @@ func (m *mock) ExpectCommand() *ExpectedCommandsInfo {
 	return e
 }
 
+func (m *mock) ExpectCommandList(filter *redis.FilterBy) *ExpectedStringSlice {
+	e := &ExpectedStringSlice{}
+	e.cmd = m.factory.CommandList(m.ctx, filter)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectClientGetName() *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.ClientGetName(m.ctx)

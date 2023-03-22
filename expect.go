@@ -29,6 +29,7 @@ type baseMock interface {
 
 	ExpectDo(args ...interface{}) *ExpectedCmd
 	ExpectCommand() *ExpectedCommandsInfo
+	ExpectCommandList(filter *redis.FilterBy) *ExpectedStringSlice
 	ExpectClientGetName() *ExpectedString
 	ExpectEcho(message interface{}) *ExpectedString
 	ExpectPing() *ExpectedStatus
