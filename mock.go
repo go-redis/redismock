@@ -942,6 +942,13 @@ func (m *mock) ExpectBitPos(key string, bit int64, pos ...int64) *ExpectedInt {
 	return e
 }
 
+func (m *mock) ExpectBitPosSpan(key string, bit int8, start, end int64, span string) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.BitPosSpan(m.ctx, key, bit, start, end, span)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectBitField(key string, args ...interface{}) *ExpectedIntSlice {
 	e := &ExpectedIntSlice{}
 	e.cmd = m.factory.BitField(m.ctx, key, args...)
@@ -1113,6 +1120,13 @@ func (m *mock) ExpectBRPop(timeout time.Duration, keys ...string) *ExpectedStrin
 func (m *mock) ExpectBRPopLPush(source, destination string, timeout time.Duration) *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.BRPopLPush(m.ctx, source, destination, timeout)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectLCS(q *redis.LCSQuery) *ExpectedLCS {
+	e := &ExpectedLCS{}
+	e.cmd = m.factory.LCS(m.ctx, q)
 	m.pushExpect(e)
 	return e
 }

@@ -99,6 +99,7 @@ type baseMock interface {
 	ExpectBitOpXor(destKey string, keys ...string) *ExpectedInt
 	ExpectBitOpNot(destKey string, key string) *ExpectedInt
 	ExpectBitPos(key string, bit int64, pos ...int64) *ExpectedInt
+	ExpectBitPosSpan(key string, bit int8, start, end int64, span string) *ExpectedInt
 	ExpectBitField(key string, args ...interface{}) *ExpectedIntSlice
 
 	ExpectScan(cursor uint64, match string, count int64) *ExpectedScan
@@ -127,6 +128,7 @@ type baseMock interface {
 	ExpectBLMPop(timeout time.Duration, direction string, count int64, keys ...string) *ExpectedKeyValues
 	ExpectBRPop(timeout time.Duration, keys ...string) *ExpectedStringSlice
 	ExpectBRPopLPush(source, destination string, timeout time.Duration) *ExpectedString
+	ExpectLCS(q *redis.LCSQuery) *ExpectedLCS
 	ExpectLIndex(key string, index int64) *ExpectedString
 	ExpectLInsert(key, op string, pivot, value interface{}) *ExpectedInt
 	ExpectLInsertBefore(key string, pivot, value interface{}) *ExpectedInt
@@ -1198,6 +1200,24 @@ func (cmd *ExpectedFunctionList) SetVal(val []redis.Library) {
 }
 
 func (cmd *ExpectedFunctionList) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedLCS struct {
+	expectedBase
+
+	val *redis.LCSMatch
+}
+
+func (cmd *ExpectedLCS) SetVal(val *redis.LCSMatch) {
+	cmd.setVal = true
+	v := *val
+	cmd.val = &v
+}
+
+func (cmd *ExpectedLCS) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
