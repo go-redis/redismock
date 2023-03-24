@@ -1460,3 +1460,55 @@ func operationFunctionListCmd(base baseMock, expected func() *ExpectedFunctionLi
 	Expect(err).NotTo(HaveOccurred())
 	Expect(val).To(Equal(libs))
 }
+
+func operationLCSCmd(base baseMock, expected func() *ExpectedLCS, actual func() *redis.LCSCmd) {
+	var (
+		setErr = errors.New("lcs cmd error")
+		val    *redis.LCSMatch
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(BeNil())
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(BeNil())
+
+	lcs := &redis.LCSMatch{
+		MatchString: "match string",
+	}
+
+	base.ClearExpect()
+	expected().SetVal(lcs)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(lcs))
+
+	lcs = &redis.LCSMatch{
+		MatchString: "",
+		Matches: []redis.LCSMatchedPosition{
+			{
+				Key1:     redis.LCSPosition{Start: 3, End: 5},
+				Key2:     redis.LCSPosition{Start: 1, End: 3},
+				MatchLen: 2,
+			},
+			{
+				Key1:     redis.LCSPosition{Start: 5, End: 8},
+				Key2:     redis.LCSPosition{Start: 2, End: 5},
+				MatchLen: 3,
+			},
+		},
+		Len: 3,
+	}
+	base.ClearExpect()
+	expected().SetVal(lcs)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(lcs))
+}

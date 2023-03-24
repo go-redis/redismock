@@ -759,6 +759,14 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("BitPosSpan", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectBitPosSpan("key", 1, 1, 3, "bit")
+			}, func() *redis.IntCmd {
+				return client.BitPosSpan(ctx, "key", 1, 1, 3, "bit")
+			})
+		})
+
 		It("BitField", func() {
 			operationIntSliceCmd(clientMock, func() *ExpectedIntSlice {
 				return clientMock.ExpectBitField("key", "INCRBY", "i5", 100, 1, "GET", "u4", 0)
@@ -980,6 +988,26 @@ var _ = Describe("Commands", func() {
 				return clientMock.ExpectBRPopLPush("list1", "list2", 1*time.Minute)
 			}, func() *redis.StringCmd {
 				return client.BRPopLPush(ctx, "list1", "list2", 1*time.Minute)
+			})
+		})
+
+		It("LIndex", func() {
+			operationLCSCmd(clientMock, func() *ExpectedLCS {
+				return clientMock.ExpectLCS(&redis.LCSQuery{
+					Key1:         "key1",
+					Key2:         "key2",
+					Idx:          true,
+					MinMatchLen:  3,
+					WithMatchLen: true,
+				})
+			}, func() *redis.LCSCmd {
+				return client.LCS(ctx, &redis.LCSQuery{
+					Key1:         "key1",
+					Key2:         "key2",
+					Idx:          true,
+					MinMatchLen:  3,
+					WithMatchLen: true,
+				})
 			})
 		})
 
