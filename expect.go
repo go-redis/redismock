@@ -30,6 +30,8 @@ type baseMock interface {
 	ExpectDo(args ...interface{}) *ExpectedCmd
 	ExpectCommand() *ExpectedCommandsInfo
 	ExpectCommandList(filter *redis.FilterBy) *ExpectedStringSlice
+	ExpectCommandGetKeys(commands ...interface{}) *ExpectedStringSlice
+	ExpectCommandGetKeysAndFlags(commands ...interface{}) *ExpectedKeyFlags
 	ExpectClientGetName() *ExpectedString
 	ExpectEcho(message interface{}) *ExpectedString
 	ExpectPing() *ExpectedStatus
@@ -1218,6 +1220,24 @@ func (cmd *ExpectedLCS) SetVal(val *redis.LCSMatch) {
 }
 
 func (cmd *ExpectedLCS) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedKeyFlags struct {
+	expectedBase
+
+	val []redis.KeyFlags
+}
+
+func (cmd *ExpectedKeyFlags) SetVal(val []redis.KeyFlags) {
+	cmd.setVal = true
+	cmd.val = make([]redis.KeyFlags, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedKeyFlags) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 

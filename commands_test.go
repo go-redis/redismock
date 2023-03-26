@@ -102,6 +102,22 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("CommandGetKeys", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectCommandGetKeys("fcall", "mylib", 0, "arg1", "arg2")
+			}, func() *redis.StringSliceCmd {
+				return client.CommandGetKeys(ctx, "fcall", "mylib", 0, "arg1", "arg2")
+			})
+		})
+
+		It("CommandGetKeysAndFlags", func() {
+			operationKeyFlagsCmd(clientMock, func() *ExpectedKeyFlags {
+				return clientMock.ExpectCommandGetKeysAndFlags("get", "key1")
+			}, func() *redis.KeyFlagsCmd {
+				return client.CommandGetKeysAndFlags(ctx, "get", "key1")
+			})
+		})
+
 		It("ClientGetName", func() {
 			operationStringCmd(clientMock, func() *ExpectedString {
 				return clientMock.ExpectClientGetName()
