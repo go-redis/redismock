@@ -466,6 +466,20 @@ func (m *mock) ExpectCommandList(filter *redis.FilterBy) *ExpectedStringSlice {
 	return e
 }
 
+func (m *mock) ExpectCommandGetKeys(commands ...interface{}) *ExpectedStringSlice {
+	e := &ExpectedStringSlice{}
+	e.cmd = m.factory.CommandGetKeys(m.ctx, commands...)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectCommandGetKeysAndFlags(commands ...interface{}) *ExpectedKeyFlags {
+	e := &ExpectedKeyFlags{}
+	e.cmd = m.factory.CommandGetKeysAndFlags(m.ctx, commands...)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectClientGetName() *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.ClientGetName(m.ctx)

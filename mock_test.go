@@ -1512,3 +1512,40 @@ func operationLCSCmd(base baseMock, expected func() *ExpectedLCS, actual func() 
 	Expect(err).NotTo(HaveOccurred())
 	Expect(val).To(Equal(lcs))
 }
+
+func operationKeyFlagsCmd(base baseMock, expected func() *ExpectedKeyFlags, actual func() *redis.KeyFlagsCmd) {
+	var (
+		setErr = errors.New("key flags cmd error")
+		val    []redis.KeyFlags
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.KeyFlags(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.KeyFlags(nil)))
+
+	kfs := []redis.KeyFlags{
+		{
+			Key:   "test1",
+			Flags: []string{"flag1", "flag2"},
+		},
+		{
+			Key:   "test2",
+			Flags: []string{"flag3", "flag4"},
+		},
+	}
+
+	base.ClearExpect()
+	expected().SetVal(kfs)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(kfs))
+}
