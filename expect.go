@@ -314,6 +314,7 @@ type baseMock interface {
 	ExpectPubSubShardNumSub(channels ...string) *ExpectedMapStringInt
 
 	ExpectClusterSlots() *ExpectedClusterSlots
+	ExpectClusterLinks() *ExpectedClusterLinks
 	ExpectClusterNodes() *ExpectedString
 	ExpectClusterMeet(host, port string) *ExpectedStatus
 	ExpectClusterForget(nodeID string) *ExpectedStatus
@@ -353,6 +354,8 @@ type baseMock interface {
 	ExpectFunctionList(q redis.FunctionListQuery) *ExpectedFunctionList
 	ExpectFunctionDump() *ExpectedString
 	ExpectFunctionRestore(libDump string) *ExpectedString
+
+	ExpectACLDryRun(username string, command ...interface{}) *ExpectedString
 }
 
 type pipelineMock interface {
@@ -1050,6 +1053,24 @@ func (cmd *ExpectedClusterSlots) SetVal(val []redis.ClusterSlot) {
 }
 
 func (cmd *ExpectedClusterSlots) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedClusterLinks struct {
+	expectedBase
+
+	val []redis.ClusterLink
+}
+
+func (cmd *ExpectedClusterLinks) SetVal(val []redis.ClusterLink) {
+	cmd.setVal = true
+	cmd.val = make([]redis.ClusterLink, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedClusterLinks) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 

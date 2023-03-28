@@ -2369,6 +2369,13 @@ func (m *mock) ExpectClusterSlots() *ExpectedClusterSlots {
 	return e
 }
 
+func (m *mock) ExpectClusterLinks() *ExpectedClusterLinks {
+	e := &ExpectedClusterLinks{}
+	e.cmd = m.factory.ClusterLinks(m.ctx)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectClusterNodes() *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.ClusterNodes(m.ctx)
@@ -2630,6 +2637,15 @@ func (m *mock) ExpectFunctionDump() *ExpectedString {
 func (m *mock) ExpectFunctionRestore(libDump string) *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.FunctionRestore(m.ctx, libDump)
+	m.pushExpect(e)
+	return e
+}
+
+// ------------------------------------------------------------------------
+
+func (m *mock) ExpectACLDryRun(username string, command ...interface{}) *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.ACLDryRun(m.ctx, username, command...)
 	m.pushExpect(e)
 	return e
 }
