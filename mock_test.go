@@ -1143,6 +1143,51 @@ func operationClusterSlotsCmd(base baseMock, expected func() *ExpectedClusterSlo
 	}))
 }
 
+func operationClusterLinksCmd(base baseMock, expected func() *ExpectedClusterLinks, actual func() *redis.ClusterLinksCmd) {
+	var (
+		setErr = errors.New("cluster links cmd error")
+		val    []redis.ClusterLink
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.ClusterLink(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.ClusterLink(nil)))
+
+	links := []redis.ClusterLink{
+		{
+			Direction:           "to",
+			Node:                "8149d745fa551e40764fecaf7cab9dbdf6b659ae",
+			CreateTime:          1639442739375,
+			Events:              "rw",
+			SendBufferAllocated: 4512,
+			SendBufferUsed:      1254,
+		},
+		{
+			Direction:           "from",
+			Node:                "8149d745fa551e40764fecaf7cab9dbdf6b659ae",
+			CreateTime:          1639442739411,
+			Events:              "r",
+			SendBufferAllocated: 0,
+			SendBufferUsed:      0,
+		},
+	}
+
+	base.ClearExpect()
+	expected().SetVal(links)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(links))
+}
+
 func operationGeoLocationCmd(base baseMock, expected func() *ExpectedGeoLocation, actual func() *redis.GeoLocationCmd) {
 	var (
 		setErr = errors.New("geo location cmd error")

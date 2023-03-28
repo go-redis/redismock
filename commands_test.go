@@ -2665,6 +2665,14 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("ClusterLinks", func() {
+			operationClusterLinksCmd(clientMock, func() *ExpectedClusterLinks {
+				return clientMock.ExpectClusterLinks()
+			}, func() *redis.ClusterLinksCmd {
+				return client.ClusterLinks(ctx)
+			})
+		})
+
 		It("ClusterNodes", func() {
 			operationStringCmd(clientMock, func() *ExpectedString {
 				return clientMock.ExpectClusterNodes()
@@ -3083,6 +3091,16 @@ var _ = Describe("Commands", func() {
 				return clientMock.ExpectFunctionRestore("lib dump")
 			}, func() *redis.StringCmd {
 				return client.FunctionRestore(ctx, "lib dump")
+			})
+		})
+
+		// ------------------------------------------------------------------
+
+		It("ACLDryRun", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectACLDryRun("default", "get", "key")
+			}, func() *redis.StringCmd {
+				return client.ACLDryRun(ctx, "default", "get", "key")
 			})
 		})
 	}
