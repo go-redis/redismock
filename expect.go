@@ -314,6 +314,7 @@ type baseMock interface {
 	ExpectPubSubShardNumSub(channels ...string) *ExpectedMapStringInt
 
 	ExpectClusterSlots() *ExpectedClusterSlots
+	ExpectClusterShards() *ExpectedClusterShards
 	ExpectClusterLinks() *ExpectedClusterLinks
 	ExpectClusterNodes() *ExpectedString
 	ExpectClusterMeet(host, port string) *ExpectedStatus
@@ -1259,6 +1260,24 @@ func (cmd *ExpectedKeyFlags) SetVal(val []redis.KeyFlags) {
 }
 
 func (cmd *ExpectedKeyFlags) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedClusterShards struct {
+	expectedBase
+
+	val []redis.ClusterShard
+}
+
+func (cmd *ExpectedClusterShards) SetVal(val []redis.ClusterShard) {
+	cmd.setVal = true
+	cmd.val = make([]redis.ClusterShard, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedClusterShards) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
