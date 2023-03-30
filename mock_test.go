@@ -1594,3 +1594,62 @@ func operationKeyFlagsCmd(base baseMock, expected func() *ExpectedKeyFlags, actu
 	Expect(err).NotTo(HaveOccurred())
 	Expect(val).To(Equal(kfs))
 }
+
+func operationClusterShardsCmd(base baseMock, expected func() *ExpectedClusterShards, actual func() *redis.ClusterShardsCmd) {
+	var (
+		setErr = errors.New("cluster shareds cmd error")
+		val    []redis.ClusterShard
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.ClusterShard(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.ClusterShard(nil)))
+
+	cs := []redis.ClusterShard{
+		{
+			Slots: []redis.SlotRange{
+				{Start: 0, End: 1999},
+				{Start: 4000, End: 5999},
+			},
+			Nodes: []redis.Node{
+				{
+					ID:                "e10b7051d6bf2d5febd39a2be297bbaea6084111",
+					Endpoint:          "127.0.0.1",
+					IP:                "127.0.0.1",
+					Hostname:          "host",
+					Port:              30001,
+					TLSPort:           1999,
+					Role:              "master",
+					ReplicationOffset: 72156,
+					Health:            "online",
+				},
+				{
+					ID:                "fd20502fe1b32fc32c15b69b0a9537551f162f1f",
+					Endpoint:          "127.0.0.1",
+					IP:                "127.0.0.1",
+					Hostname:          "host",
+					Port:              30002,
+					TLSPort:           1999,
+					Role:              "replica",
+					ReplicationOffset: 72156,
+					Health:            "online",
+				},
+			},
+		},
+	}
+
+	base.ClearExpect()
+	expected().SetVal(cs)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(cs))
+}

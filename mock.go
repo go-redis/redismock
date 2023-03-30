@@ -2369,6 +2369,13 @@ func (m *mock) ExpectClusterSlots() *ExpectedClusterSlots {
 	return e
 }
 
+func (m *mock) ExpectClusterShards() *ExpectedClusterShards {
+	e := &ExpectedClusterShards{}
+	e.cmd = m.factory.ClusterShards(m.ctx)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectClusterLinks() *ExpectedClusterLinks {
 	e := &ExpectedClusterLinks{}
 	e.cmd = m.factory.ClusterLinks(m.ctx)

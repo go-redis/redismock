@@ -2665,6 +2665,14 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("ClusterShards", func() {
+			operationClusterShardsCmd(clientMock, func() *ExpectedClusterShards {
+				return clientMock.ExpectClusterShards()
+			}, func() *redis.ClusterShardsCmd {
+				return client.ClusterShards(ctx)
+			})
+		})
+
 		It("ClusterLinks", func() {
 			operationClusterLinksCmd(clientMock, func() *ExpectedClusterLinks {
 				return clientMock.ExpectClusterLinks()
