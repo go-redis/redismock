@@ -2634,6 +2634,13 @@ func (m *mock) ExpectFunctionList(q redis.FunctionListQuery) *ExpectedFunctionLi
 	return e
 }
 
+func (m *mock) ExpectFunctionKill() *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.FunctionKill(m.ctx)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectFunctionDump() *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.FunctionDump(m.ctx)
@@ -2644,6 +2651,20 @@ func (m *mock) ExpectFunctionDump() *ExpectedString {
 func (m *mock) ExpectFunctionRestore(libDump string) *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.FunctionRestore(m.ctx, libDump)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectFCall(function string, keys []string, args ...interface{}) *ExpectedCmd {
+	e := &ExpectedCmd{}
+	e.cmd = m.factory.FCall(m.ctx, function, keys, args...)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectFCallRo(function string, keys []string, args ...interface{}) *ExpectedCmd {
+	e := &ExpectedCmd{}
+	e.cmd = m.factory.FCallRo(m.ctx, function, keys, args...)
 	m.pushExpect(e)
 	return e
 }

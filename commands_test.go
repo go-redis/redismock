@@ -3086,6 +3086,14 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		It("FunctionKill", func() {
+			operationStringCmd(clientMock, func() *ExpectedString {
+				return clientMock.ExpectFunctionKill()
+			}, func() *redis.StringCmd {
+				return client.FunctionKill(ctx)
+			})
+		})
+
 		It("FunctionDump", func() {
 			operationStringCmd(clientMock, func() *ExpectedString {
 				return clientMock.ExpectFunctionDump()
@@ -3099,6 +3107,22 @@ var _ = Describe("Commands", func() {
 				return clientMock.ExpectFunctionRestore("lib dump")
 			}, func() *redis.StringCmd {
 				return client.FunctionRestore(ctx, "lib dump")
+			})
+		})
+
+		It("FCall", func() {
+			operationCmdCmd(clientMock, func() *ExpectedCmd {
+				return clientMock.ExpectFCall("func-1", []string{"key1", "key2"}, "arg1", "arg2")
+			}, func() *redis.Cmd {
+				return client.FCall(ctx, "func-1", []string{"key1", "key2"}, "arg1", "arg2")
+			})
+		})
+
+		It("FCallRo", func() {
+			operationCmdCmd(clientMock, func() *ExpectedCmd {
+				return clientMock.ExpectFCallRo("func-1", []string{"key1", "key2"}, "arg1", "arg2")
+			}, func() *redis.Cmd {
+				return client.FCallRo(ctx, "func-1", []string{"key1", "key2"}, "arg1", "arg2")
 			})
 		})
 
