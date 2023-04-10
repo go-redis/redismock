@@ -353,8 +353,11 @@ type baseMock interface {
 	ExpectFunctionFlush() *ExpectedString
 	ExpectFunctionFlushAsync() *ExpectedString
 	ExpectFunctionList(q redis.FunctionListQuery) *ExpectedFunctionList
+	ExpectFunctionKill() *ExpectedString
 	ExpectFunctionDump() *ExpectedString
 	ExpectFunctionRestore(libDump string) *ExpectedString
+	ExpectFCall(function string, keys []string, args ...interface{}) *ExpectedCmd
+	ExpectFCallRo(function string, keys []string, args ...interface{}) *ExpectedCmd
 
 	ExpectACLDryRun(username string, command ...interface{}) *ExpectedString
 }
