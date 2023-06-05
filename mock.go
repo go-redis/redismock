@@ -89,17 +89,19 @@ func (redisClientHook) DialHook(hook redis.DialHook) redis.DialHook {
 	return hook
 }
 
-func (h redisClientHook) ProcessHook(_ redis.ProcessHook) redis.ProcessHook {
+func (h redisClientHook) ProcessHook(hook redis.ProcessHook) redis.ProcessHook {
 	return func(ctx context.Context, cmd redis.Cmder) error {
 		err := h.fn(cmd)
 		if h.returnErr != nil && (err == nil || cmd.Err() == nil) {
 			err = h.returnErr
 		}
+
+		err = hook(ctx, cmd)
 		return err
 	}
 }
 
-func (h redisClientHook) ProcessPipelineHook(_ redis.ProcessPipelineHook) redis.ProcessPipelineHook {
+func (h redisClientHook) ProcessPipelineHook(hook redis.ProcessPipelineHook) redis.ProcessPipelineHook {
 	return func(ctx context.Context, cmds []redis.Cmder) error {
 		for _, cmd := range cmds {
 			err := h.fn(cmd)
@@ -110,7 +112,9 @@ func (h redisClientHook) ProcessPipelineHook(_ redis.ProcessPipelineHook) redis.
 				return err
 			}
 		}
-		return nil
+
+		err := hook(ctx, cmds)
+		return err
 	}
 }
 
