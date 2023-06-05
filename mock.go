@@ -93,11 +93,10 @@ func (h redisClientHook) ProcessHook(hook redis.ProcessHook) redis.ProcessHook {
 	return func(ctx context.Context, cmd redis.Cmder) error {
 		err := h.fn(cmd)
 		if h.returnErr != nil && (err == nil || cmd.Err() == nil) {
-			err = h.returnErr
+			return h.returnErr
 		}
 
-		err = hook(ctx, cmd)
-		return err
+		return hook(ctx, cmd)
 	}
 }
 
@@ -113,8 +112,7 @@ func (h redisClientHook) ProcessPipelineHook(hook redis.ProcessPipelineHook) red
 			}
 		}
 
-		err := hook(ctx, cmds)
-		return err
+		return hook(ctx, cmds)
 	}
 }
 
