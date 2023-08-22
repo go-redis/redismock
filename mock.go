@@ -2187,6 +2187,13 @@ func (m *mock) ExpectSave() *ExpectedStatus {
 	return e
 }
 
+func (m *mock) ExpectSelect(index int) *ExpectedStatus {
+	e := &ExpectedStatus{}
+	e.cmd = redis.NewStatusCmd(m.ctx, "select", index)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectShutdown() *ExpectedStatus {
 	e := &ExpectedStatus{}
 	e.cmd = m.factory.Shutdown(m.ctx)
