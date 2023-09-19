@@ -6,10 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-redis/redis/v8"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/redis/go-redis/v9"
 )
 
 var (
@@ -151,6 +150,38 @@ func operationStringSliceCmd(base baseMock, expected func() *ExpectedStringSlice
 	Expect(val).To(Equal([]string{"redis", "move"}))
 }
 
+func operationKeyValueSliceCmd(base baseMock, expected func() *ExpectedKeyValueSlice, actual func() *redis.KeyValueSliceCmd) {
+	var (
+		setErr = errors.New("key value slice cmd error")
+		val    []redis.KeyValue
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.KeyValue(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.KeyValue(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]redis.KeyValue{
+		{Key: "k1", Value: "v1"},
+		{Key: "k2", Value: "v2"},
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal([]redis.KeyValue{
+		{Key: "k1", Value: "v1"},
+		{Key: "k2", Value: "v2"},
+	}))
+}
+
 func operationDurationCmd(base baseMock, expected func() *ExpectedDuration, actual func() *redis.DurationCmd) {
 	var (
 		setErr = errors.New("duration cmd error")
@@ -229,6 +260,32 @@ func operationFloatCmd(base baseMock, expected func() *ExpectedFloat, actual fun
 	Expect(val).To(Equal(float64(1)))
 }
 
+func operationFloatSliceCmd(base baseMock, expected func() *ExpectedFloatSlice, actual func() *redis.FloatSliceCmd) {
+	var (
+		setErr = errors.New("float slice cmd error")
+		val    []float64
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]float64(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]float64(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]float64{11.11, 22.22, 99.99999})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal([]float64{11.11, 22.22, 99.99999}))
+}
+
 func operationIntSliceCmd(base baseMock, expected func() *ExpectedIntSlice, actual func() *redis.IntSliceCmd) {
 	var (
 		setErr = errors.New("int slice cmd error")
@@ -285,9 +342,9 @@ func operationScanCmd(base baseMock, expected func() *ExpectedScan, actual func(
 	Expect(cursor).To(Equal(uint64(5)))
 }
 
-func operationStringStringMapCmd(base baseMock, expected func() *ExpectedStringStringMap, actual func() *redis.StringStringMapCmd) {
+func operationMapStringStringCmd(base baseMock, expected func() *ExpectedMapStringString, actual func() *redis.MapStringStringCmd) {
 	var (
-		setErr = errors.New("string string map cmd error")
+		setErr = errors.New("map string string cmd error")
 		val    map[string]string
 		err    error
 	)
@@ -480,6 +537,74 @@ func operationXPendingExtCmd(base baseMock, expected func() *ExpectedXPendingExt
 	}))
 }
 
+func operationXAutoClaimCmd(base baseMock, expected func() *ExpectedXAutoClaim, actual func() *redis.XAutoClaimCmd) {
+	var (
+		setErr = errors.New("x auto claim cmd error")
+		start  string
+		val    []redis.XMessage
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, start, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(start).To(Equal(""))
+	Expect(val).To(Equal([]redis.XMessage(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, start, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(start).To(Equal(""))
+	Expect(val).To(Equal([]redis.XMessage(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]redis.XMessage{
+		{ID: "1-0", Values: map[string]interface{}{"uno": "un"}},
+		{ID: "2-0", Values: map[string]interface{}{"dos": "deux"}},
+		{ID: "3-0", Values: map[string]interface{}{"tres": "troix"}},
+	}, "3-0")
+	val, start, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(start).To(Equal("3-0"))
+	Expect(val).To(Equal([]redis.XMessage{
+		{ID: "1-0", Values: map[string]interface{}{"uno": "un"}},
+		{ID: "2-0", Values: map[string]interface{}{"dos": "deux"}},
+		{ID: "3-0", Values: map[string]interface{}{"tres": "troix"}},
+	}))
+}
+
+func operationXAutoClaimJustIDCmd(base baseMock, expected func() *ExpectedXAutoClaimJustID, actual func() *redis.XAutoClaimJustIDCmd) {
+	var (
+		setErr = errors.New("x auto claim just id cmd error")
+		start  string
+		val    []string
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, start, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(start).To(Equal(""))
+	Expect(val).To(Equal([]string(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, start, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(start).To(Equal(""))
+	Expect(val).To(Equal([]string(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]string{"1-0", "2-0", "3-0"}, "3-0")
+	val, start, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(start).To(Equal("3-0"))
+	Expect(val).To(Equal([]string{"1-0", "2-0", "3-0"}))
+}
+
 func operationXInfoGroupsCmd(base baseMock, expected func() *ExpectedXInfoGroups, actual func() *redis.XInfoGroupsCmd) {
 	var (
 		setErr = errors.New("x info group cmd error")
@@ -572,6 +697,229 @@ func operationXInfoStreamCmd(base baseMock, expected func() *ExpectedXInfoStream
 			ID: "last_id",
 			Values: map[string]interface{}{
 				"last_key": "last_value",
+			},
+		},
+	}))
+}
+
+func operationXInfoConsumersCmd(base baseMock, expected func() *ExpectedXInfoConsumers, actual func() *redis.XInfoConsumersCmd) {
+	var (
+		setErr = errors.New("x info consumers cmd error")
+		val    []redis.XInfoConsumer
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.XInfoConsumer(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.XInfoConsumer(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]redis.XInfoConsumer{
+		{
+			Name:    "c1",
+			Pending: 2,
+			Idle:    1,
+		},
+		{
+			Name:    "c2",
+			Pending: 1,
+			Idle:    2,
+		},
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal([]redis.XInfoConsumer{
+		{
+			Name:    "c1",
+			Pending: 2,
+			Idle:    1,
+		},
+		{
+			Name:    "c2",
+			Pending: 1,
+			Idle:    2,
+		},
+	}))
+}
+
+func operationXInfoStreamFullCmd(base baseMock, expected func() *ExpectedXInfoStreamFull, actual func() *redis.XInfoStreamFullCmd) {
+	var (
+		setErr = errors.New("x info stream full cmd error")
+		val    *redis.XInfoStreamFull
+		valNil *redis.XInfoStreamFull
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal(valNil))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal(valNil))
+
+	now := time.Now()
+	now2 := now.Add(3 * time.Hour)
+	now3 := now.Add(5 * time.Hour)
+	now4 := now.Add(6 * time.Hour)
+	now5 := now.Add(8 * time.Hour)
+	now6 := now.Add(9 * time.Hour)
+	base.ClearExpect()
+	expected().SetVal(&redis.XInfoStreamFull{
+		Length:          3,
+		RadixTreeKeys:   4,
+		RadixTreeNodes:  5,
+		LastGeneratedID: "3-3",
+		Entries: []redis.XMessage{
+			{
+				ID: "1-0",
+				Values: map[string]interface{}{
+					"key1": "val1",
+					"key2": "val2",
+				},
+			},
+		},
+		Groups: []redis.XInfoStreamGroup{
+			{
+				Name:            "group1",
+				LastDeliveredID: "10-1",
+				PelCount:        3,
+				Pending: []redis.XInfoStreamGroupPending{
+					{
+						ID:            "5-1",
+						Consumer:      "consumer1",
+						DeliveryTime:  now,
+						DeliveryCount: 9,
+					},
+					{
+						ID:            "5-2",
+						Consumer:      "consumer2",
+						DeliveryTime:  now,
+						DeliveryCount: 8,
+					},
+				},
+				Consumers: []redis.XInfoStreamConsumer{
+					{
+						Name:     "consumer3",
+						SeenTime: now2,
+						PelCount: 7,
+						Pending: []redis.XInfoStreamConsumerPending{
+							{
+								ID:            "6-1",
+								DeliveryTime:  now3,
+								DeliveryCount: 3,
+							},
+							{
+								ID:            "6-2",
+								DeliveryTime:  now4,
+								DeliveryCount: 2,
+							},
+						},
+					},
+					{
+						Name:     "consumer4",
+						SeenTime: now,
+						PelCount: 6,
+						Pending: []redis.XInfoStreamConsumerPending{
+							{
+								ID:            "7-1",
+								DeliveryTime:  now5,
+								DeliveryCount: 5,
+							},
+							{
+								ID:            "8-2",
+								DeliveryTime:  now6,
+								DeliveryCount: 6,
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(&redis.XInfoStreamFull{
+		Length:          3,
+		RadixTreeKeys:   4,
+		RadixTreeNodes:  5,
+		LastGeneratedID: "3-3",
+		Entries: []redis.XMessage{
+			{
+				ID: "1-0",
+				Values: map[string]interface{}{
+					"key1": "val1",
+					"key2": "val2",
+				},
+			},
+		},
+		Groups: []redis.XInfoStreamGroup{
+			{
+				Name:            "group1",
+				LastDeliveredID: "10-1",
+				PelCount:        3,
+				Pending: []redis.XInfoStreamGroupPending{
+					{
+						ID:            "5-1",
+						Consumer:      "consumer1",
+						DeliveryTime:  now,
+						DeliveryCount: 9,
+					},
+					{
+						ID:            "5-2",
+						Consumer:      "consumer2",
+						DeliveryTime:  now,
+						DeliveryCount: 8,
+					},
+				},
+				Consumers: []redis.XInfoStreamConsumer{
+					{
+						Name:     "consumer3",
+						SeenTime: now2,
+						PelCount: 7,
+						Pending: []redis.XInfoStreamConsumerPending{
+							{
+								ID:            "6-1",
+								DeliveryTime:  now3,
+								DeliveryCount: 3,
+							},
+							{
+								ID:            "6-2",
+								DeliveryTime:  now4,
+								DeliveryCount: 2,
+							},
+						},
+					},
+					{
+						Name:     "consumer4",
+						SeenTime: now,
+						PelCount: 6,
+						Pending: []redis.XInfoStreamConsumerPending{
+							{
+								ID:            "7-1",
+								DeliveryTime:  now5,
+								DeliveryCount: 5,
+							},
+							{
+								ID:            "8-2",
+								DeliveryTime:  now6,
+								DeliveryCount: 6,
+							},
+						},
+					},
+				},
 			},
 		},
 	}))
@@ -733,9 +1081,9 @@ func operationBoolSliceCmd(base baseMock, expected func() *ExpectedBoolSlice, ac
 	Expect(val).To(Equal([]bool{true, false, true}))
 }
 
-func operationStringIntMapCmd(base baseMock, expected func() *ExpectedStringIntMap, actual func() *redis.StringIntMapCmd) {
+func operationMapStringIntCmd(base baseMock, expected func() *ExpectedMapStringInt, actual func() *redis.MapStringIntCmd) {
 	var (
-		setErr = errors.New("string int map cmd error")
+		setErr = errors.New("map string int cmd error")
 		val    map[string]int64
 		err    error
 	)
@@ -793,6 +1141,51 @@ func operationClusterSlotsCmd(base baseMock, expected func() *ExpectedClusterSlo
 			{ID: "2", Addr: "2.2.2.2"},
 		}},
 	}))
+}
+
+func operationClusterLinksCmd(base baseMock, expected func() *ExpectedClusterLinks, actual func() *redis.ClusterLinksCmd) {
+	var (
+		setErr = errors.New("cluster links cmd error")
+		val    []redis.ClusterLink
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.ClusterLink(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.ClusterLink(nil)))
+
+	links := []redis.ClusterLink{
+		{
+			Direction:           "to",
+			Node:                "8149d745fa551e40764fecaf7cab9dbdf6b659ae",
+			CreateTime:          1639442739375,
+			Events:              "rw",
+			SendBufferAllocated: 4512,
+			SendBufferUsed:      1254,
+		},
+		{
+			Direction:           "from",
+			Node:                "8149d745fa551e40764fecaf7cab9dbdf6b659ae",
+			CreateTime:          1639442739411,
+			Events:              "r",
+			SendBufferAllocated: 0,
+			SendBufferUsed:      0,
+		},
+	}
+
+	base.ClearExpect()
+	expected().SetVal(links)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(links))
 }
 
 func operationGeoLocationCmd(base baseMock, expected func() *ExpectedGeoLocation, actual func() *redis.GeoLocationCmd) {
@@ -869,4 +1262,394 @@ func operationGeoPosCmd(base baseMock, expected func() *ExpectedGeoPos, actual f
 			Latitude:  37.50266842333162,
 		},
 	}))
+}
+
+func operationGeoSearchLocationCmd(base baseMock, expected func() *ExpectedGeoSearchLocation, actual func() *redis.GeoSearchLocationCmd) {
+	var (
+		setErr = errors.New("geo search location cmd error")
+		val    []redis.GeoLocation
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.GeoLocation(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.GeoLocation(nil)))
+
+	base.ClearExpect()
+	expected().SetVal([]redis.GeoLocation{
+		{
+			Name:      "Catania",
+			Longitude: 15.08726745843887329,
+			Latitude:  37.50266842333162032,
+			Dist:      56.4413,
+			GeoHash:   3479447370796909,
+		},
+		{
+			Name:      "Palermo",
+			Longitude: 13.36138933897018433,
+			Latitude:  38.11555639549629859,
+			Dist:      190.4424,
+			GeoHash:   3479099956230698,
+		},
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal([]redis.GeoLocation{
+		{
+			Name:      "Catania",
+			Longitude: 15.08726745843887329,
+			Latitude:  37.50266842333162032,
+			Dist:      56.4413,
+			GeoHash:   3479447370796909,
+		},
+		{
+			Name:      "Palermo",
+			Longitude: 13.36138933897018433,
+			Latitude:  38.11555639549629859,
+			Dist:      190.4424,
+			GeoHash:   3479099956230698,
+		},
+	}))
+}
+
+func operationSlowLogCmd(base baseMock, expected func() *ExpectedSlowLog, actual func() *redis.SlowLogCmd) {
+	var (
+		setErr = errors.New("slow log cmd error")
+		val    []redis.SlowLog
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.SlowLog(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.SlowLog(nil)))
+
+	now := time.Now()
+	now1 := now.Add(time.Hour)
+	base.ClearExpect()
+	expected().SetVal([]redis.SlowLog{
+		{
+			ID:         1,
+			Time:       now,
+			Duration:   3 * time.Millisecond,
+			Args:       []string{"a", "b", "c"},
+			ClientAddr: "127.0.0.1:1234",
+			ClientName: "client_hi",
+		},
+		{
+			ID:         2,
+			Time:       now1,
+			Duration:   4 * time.Millisecond,
+			Args:       []string{"x", "y", "z"},
+			ClientAddr: "127.0.0.1:6379",
+			ClientName: "client_hi",
+		},
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal([]redis.SlowLog{
+		{
+			ID:         1,
+			Time:       now,
+			Duration:   3 * time.Millisecond,
+			Args:       []string{"a", "b", "c"},
+			ClientAddr: "127.0.0.1:1234",
+			ClientName: "client_hi",
+		},
+		{
+			ID:         2,
+			Time:       now1,
+			Duration:   4 * time.Millisecond,
+			Args:       []string{"x", "y", "z"},
+			ClientAddr: "127.0.0.1:6379",
+			ClientName: "client_hi",
+		},
+	}))
+}
+
+func operationKeyValuesCmd(base baseMock, expected func() *ExpectedKeyValues, actual func() *redis.KeyValuesCmd) {
+	var (
+		setErr = errors.New("key values cmd error")
+		key    string
+		val    []string
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	key, val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(key).To(Equal(""))
+	Expect(val).To(Equal([]string(nil)))
+
+	base.ClearExpect()
+	expected()
+	key, val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(key).To(Equal(""))
+	Expect(val).To(Equal([]string(nil)))
+
+	base.ClearExpect()
+	expected().SetVal("key1", []string{"v1", "v2"})
+	key, val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(key).To(Equal("key1"))
+	Expect(val).To(Equal([]string{"v1", "v2"}))
+}
+
+func operationZSliceWithKeyCmd(base baseMock, expected func() *ExpectedZSliceWithKey, actual func() *redis.ZSliceWithKeyCmd) {
+	var (
+		setErr = errors.New("z slice with key cmd error")
+		key    string
+		val    []redis.Z
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	key, val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(key).To(Equal(""))
+	Expect(val).To(Equal([]redis.Z(nil)))
+
+	base.ClearExpect()
+	expected()
+	key, val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(key).To(Equal(""))
+	Expect(val).To(Equal([]redis.Z(nil)))
+
+	base.ClearExpect()
+	expected().SetVal("key1", []redis.Z{
+		{Score: 100, Member: "one"},
+		{Score: 200, Member: "two"},
+	})
+	key, val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(key).To(Equal("key1"))
+	Expect(val).To(Equal([]redis.Z{
+		{Score: 100, Member: "one"},
+		{Score: 200, Member: "two"},
+	}))
+}
+
+func operationFunctionListCmd(base baseMock, expected func() *ExpectedFunctionList, actual func() *redis.FunctionListCmd) {
+	var (
+		setErr = errors.New("function list cmd error")
+		val    []redis.Library
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.Library(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.Library(nil)))
+
+	libs := []redis.Library{
+		{
+			Name:   "lib1",
+			Engine: "LUA",
+			Functions: []redis.Function{
+				{
+					Name:        "lib1func1",
+					Description: "lib1 func1 desc",
+					Flags:       []string{"no-writes", "allow-stale"},
+				},
+			},
+			Code: "test code 1",
+		},
+		{
+			Name:   "lib2",
+			Engine: "LUA",
+			Functions: []redis.Function{
+				{
+					Name:        "lib2func1",
+					Description: "lib1 func1 desc",
+					Flags:       []string{"no-writes", "allow-stale"},
+				},
+				{
+					Name:        "lib2func2",
+					Description: "lib2 func2 desc",
+					Flags:       []string{"no-writes"},
+				},
+			},
+			Code: "test code 2",
+		},
+	}
+
+	base.ClearExpect()
+	expected().SetVal(libs)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(libs))
+}
+
+func operationLCSCmd(base baseMock, expected func() *ExpectedLCS, actual func() *redis.LCSCmd) {
+	var (
+		setErr = errors.New("lcs cmd error")
+		val    *redis.LCSMatch
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(BeNil())
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(BeNil())
+
+	lcs := &redis.LCSMatch{
+		MatchString: "match string",
+	}
+
+	base.ClearExpect()
+	expected().SetVal(lcs)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(lcs))
+
+	lcs = &redis.LCSMatch{
+		MatchString: "",
+		Matches: []redis.LCSMatchedPosition{
+			{
+				Key1:     redis.LCSPosition{Start: 3, End: 5},
+				Key2:     redis.LCSPosition{Start: 1, End: 3},
+				MatchLen: 2,
+			},
+			{
+				Key1:     redis.LCSPosition{Start: 5, End: 8},
+				Key2:     redis.LCSPosition{Start: 2, End: 5},
+				MatchLen: 3,
+			},
+		},
+		Len: 3,
+	}
+	base.ClearExpect()
+	expected().SetVal(lcs)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(lcs))
+}
+
+func operationKeyFlagsCmd(base baseMock, expected func() *ExpectedKeyFlags, actual func() *redis.KeyFlagsCmd) {
+	var (
+		setErr = errors.New("key flags cmd error")
+		val    []redis.KeyFlags
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.KeyFlags(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.KeyFlags(nil)))
+
+	kfs := []redis.KeyFlags{
+		{
+			Key:   "test1",
+			Flags: []string{"flag1", "flag2"},
+		},
+		{
+			Key:   "test2",
+			Flags: []string{"flag3", "flag4"},
+		},
+	}
+
+	base.ClearExpect()
+	expected().SetVal(kfs)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(kfs))
+}
+
+func operationClusterShardsCmd(base baseMock, expected func() *ExpectedClusterShards, actual func() *redis.ClusterShardsCmd) {
+	var (
+		setErr = errors.New("cluster shareds cmd error")
+		val    []redis.ClusterShard
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.ClusterShard(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.ClusterShard(nil)))
+
+	cs := []redis.ClusterShard{
+		{
+			Slots: []redis.SlotRange{
+				{Start: 0, End: 1999},
+				{Start: 4000, End: 5999},
+			},
+			Nodes: []redis.Node{
+				{
+					ID:                "e10b7051d6bf2d5febd39a2be297bbaea6084111",
+					Endpoint:          "127.0.0.1",
+					IP:                "127.0.0.1",
+					Hostname:          "host",
+					Port:              30001,
+					TLSPort:           1999,
+					Role:              "master",
+					ReplicationOffset: 72156,
+					Health:            "online",
+				},
+				{
+					ID:                "fd20502fe1b32fc32c15b69b0a9537551f162f1f",
+					Endpoint:          "127.0.0.1",
+					IP:                "127.0.0.1",
+					Hostname:          "host",
+					Port:              30002,
+					TLSPort:           1999,
+					Role:              "replica",
+					ReplicationOffset: 72156,
+					Health:            "online",
+				},
+			},
+		},
+	}
+
+	base.ClearExpect()
+	expected().SetVal(cs)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(cs))
 }
