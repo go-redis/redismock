@@ -41,12 +41,17 @@ func NewClientMock() (*redis.Client, ClientMock) {
 	return m.client.(*redis.Client), m
 }
 
+func NewClientMockWithHooks(hooks ...redis.Hook) (*redis.Client, ClientMock) {
+	m := newMock(redisClient, hooks...)
+	return m.client.(*redis.Client), m
+}
+
 func NewClusterMock() (*redis.ClusterClient, ClusterClientMock) {
 	m := newMock(redisCluster)
 	return m.client.(*redis.ClusterClient), m
 }
 
-func newMock(typ redisClientType) *mock {
+func newMock(typ redisClientType, hooks ...redis.Hook) *mock {
 	m := &mock{
 		ctx:        context.Background(),
 		clientType: typ,
@@ -59,6 +64,9 @@ func newMock(typ redisClientType) *mock {
 		factory := redis.NewClient(opt)
 		client := redis.NewClient(opt)
 		factory.AddHook(nilHook{})
+		for i := range hooks {
+			client.AddHook(hooks[i])
+		}
 		client.AddHook(redisClientHook{fn: m.process})
 
 		m.factory = factory
@@ -798,13 +806,6 @@ func (m *mock) ExpectGetSet(key string, value interface{}) *ExpectedString {
 func (m *mock) ExpectGetEx(key string, expiration time.Duration) *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.GetEx(m.ctx, key, expiration)
-	m.pushExpect(e)
-	return e
-}
-
-func (m *mock) ExpectGetDel(key string) *ExpectedString {
-	e := &ExpectedString{}
-	e.cmd = m.factory.GetDel(m.ctx, key)
 	m.pushExpect(e)
 	return e
 }
