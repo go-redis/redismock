@@ -12,12 +12,18 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+type mockCmdable interface {
+	redis.Cmdable
+	redis.BitMapCmdable
+	redis.StreamCmdable
+}
+
 type mock struct {
 	ctx context.Context
 
 	parent *mock
 
-	factory  redis.Cmdable
+	factory  mockCmdable
 	client   redis.Cmdable
 	expected []expectation
 

@@ -12,7 +12,7 @@ import (
 var _ = Describe("Commands", func() {
 	var (
 		clientMock baseMock
-		client     redis.Cmdable
+		client     mockCmdable
 		clientType redisClientType
 	)
 
