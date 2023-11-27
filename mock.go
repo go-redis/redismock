@@ -271,13 +271,20 @@ func (m *mock) match(expect expectation, cmd redis.Cmder) error {
 func (m *mock) compare(isRegexp bool, expect, cmd interface{}) error {
 	expr, ok := expect.(string)
 	if isRegexp && ok {
-		cmdValue := fmt.Sprint(cmd)
+		var cmdValue1 string
+		var cmdValue2 string
+		if bCmd, ok := cmd.([]byte); ok {
+			cmdValue1 = string(bCmd)
+			cmdValue2 = fmt.Sprint(cmd)
+		} else {
+			cmdValue1 = fmt.Sprint(cmd)
+		}
 		re, err := regexp.Compile(expr)
 		if err != nil {
 			return err
 		}
-		if !re.MatchString(cmdValue) {
-			return fmt.Errorf("args not match, expectation regular: '%s', but gave: '%s'", expr, cmdValue)
+		if !re.MatchString(cmdValue1) && !re.MatchString(cmdValue2) {
+			return fmt.Errorf("args not match, expectation regular: '%s', but gave: '%s', and: '%s", expr, cmdValue1, cmdValue2)
 		}
 	} else if !reflect.DeepEqual(expect, cmd) {
 		return fmt.Errorf("args not `DeepEqual`, expectation: '%+v', but gave: '%+v'", expect, cmd)
