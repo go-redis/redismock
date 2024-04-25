@@ -2683,3 +2683,208 @@ func (m *mock) ExpectACLDryRun(username string, command ...interface{}) *Expecte
 	m.pushExpect(e)
 	return e
 }
+
+// ------------------------------------------------------------------------------------------
+
+func (m *mock) ExpectTSAdd(key string, timestamp interface{}, value float64) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.TSAdd(m.ctx, key, timestamp, value)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSAddWithArgs(key string, timestamp interface{}, value float64, options *redis.TSOptions) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.TSAddWithArgs(m.ctx, key, timestamp, value, options)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSCreate(key string) *ExpectedStatus {
+	e := &ExpectedStatus{}
+	e.cmd = m.factory.TSCreate(m.ctx, key)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSCreateWithArgs(key string, options *redis.TSOptions) *ExpectedStatus {
+	e := &ExpectedStatus{}
+	e.cmd = m.factory.TSCreateWithArgs(m.ctx, key, options)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSAlter(key string, options *redis.TSAlterOptions) *ExpectedStatus {
+	e := &ExpectedStatus{}
+	e.cmd = m.factory.TSAlter(m.ctx, key, options)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSCreateRule(sourceKey string, destKey string, aggregator redis.Aggregator, bucketDuration int) *ExpectedStatus {
+	e := &ExpectedStatus{}
+	e.cmd = m.factory.TSCreateRule(m.ctx, sourceKey, destKey, aggregator, bucketDuration)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSCreateRuleWithArgs(sourceKey string, destKey string, aggregator redis.Aggregator, bucketDuration int, options *redis.TSCreateRuleOptions) *ExpectedStatus {
+	e := &ExpectedStatus{}
+	e.cmd = m.factory.TSCreateRuleWithArgs(m.ctx, sourceKey, destKey, aggregator, bucketDuration, options)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSIncrBy(key string, timestamp float64) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.TSIncrBy(m.ctx, key, timestamp)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSIncrByWithArgs(key string, timestamp float64, options *redis.TSIncrDecrOptions) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.TSIncrByWithArgs(m.ctx, key, timestamp, options)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSDecrBy(key string, timestamp float64) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.TSDecrBy(m.ctx, key, timestamp)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSDecrByWithArgs(key string, timestamp float64, options *redis.TSIncrDecrOptions) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.TSDecrByWithArgs(m.ctx, key, timestamp, options)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSDel(key string, fromTimestamp int, toTimestamp int) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = m.factory.TSDel(m.ctx, key, fromTimestamp, toTimestamp)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSDeleteRule(sourceKey string, destKey string) *ExpectedStatus {
+	e := &ExpectedStatus{}
+	e.cmd = m.factory.TSDeleteRule(m.ctx, sourceKey, destKey)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSGet(key string) *ExpectedTSTimestampValue {
+	e := &ExpectedTSTimestampValue{}
+	e.cmd = m.factory.TSGet(m.ctx, key)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSGetWithArgs(key string, options *redis.TSGetOptions) *ExpectedTSTimestampValue {
+	e := &ExpectedTSTimestampValue{}
+	e.cmd = m.factory.TSGetWithArgs(m.ctx, key, options)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSInfo(key string) *ExpectedMapStringInterface {
+	e := &ExpectedMapStringInterface{}
+	e.cmd = m.factory.TSInfo(m.ctx, key)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSInfoWithArgs(key string, options *redis.TSInfoOptions) *ExpectedMapStringInterface {
+	e := &ExpectedMapStringInterface{}
+	e.cmd = m.factory.TSInfoWithArgs(m.ctx, key, options)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSMAdd(ktvSlices [][]interface{}) *ExpectedIntSlice {
+	e := &ExpectedIntSlice{}
+	e.cmd = m.factory.TSMAdd(m.ctx, ktvSlices)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSQueryIndex(filterExpr []string) *ExpectedStringSlice {
+	e := &ExpectedStringSlice{}
+	e.cmd = m.factory.TSQueryIndex(m.ctx, filterExpr)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSRevRange(key string, fromTimestamp int, toTimestamp int) *ExpectedTSTimestampValueSlice {
+	e := &ExpectedTSTimestampValueSlice{}
+	e.cmd = m.factory.TSRevRange(m.ctx, key, fromTimestamp, toTimestamp)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSRevRangeWithArgs(key string, fromTimestamp int, toTimestamp int, options *redis.TSRevRangeOptions) *ExpectedTSTimestampValueSlice {
+	e := &ExpectedTSTimestampValueSlice{}
+	e.cmd = m.factory.TSRevRangeWithArgs(m.ctx, key, fromTimestamp, toTimestamp, options)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSRange(key string, fromTimestamp int, toTimestamp int) *ExpectedTSTimestampValueSlice {
+	e := &ExpectedTSTimestampValueSlice{}
+	e.cmd = m.factory.TSRange(m.ctx, key, fromTimestamp, toTimestamp)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSRangeWithArgs(key string, fromTimestamp int, toTimestamp int, options *redis.TSRangeOptions) *ExpectedTSTimestampValueSlice {
+	e := &ExpectedTSTimestampValueSlice{}
+	e.cmd = m.factory.TSRangeWithArgs(m.ctx, key, fromTimestamp, toTimestamp, options)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSMRange(fromTimestamp int, toTimestamp int, filterExpr []string) *ExpectedMapStringSliceInterface {
+	e := &ExpectedMapStringSliceInterface{}
+	e.cmd = m.factory.TSMRange(m.ctx, fromTimestamp, toTimestamp, filterExpr)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSMRangeWithArgs(fromTimestamp int, toTimestamp int, filterExpr []string, options *redis.TSMRangeOptions) *ExpectedMapStringSliceInterface {
+	e := &ExpectedMapStringSliceInterface{}
+	e.cmd = m.factory.TSMRangeWithArgs(m.ctx, fromTimestamp, toTimestamp, filterExpr, options)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectTSMRevRange(fromTimestamp int, toTimestamp int, filterExpr []string) *ExpectedMapStringSliceInterface {
+    e := &ExpectedMapStringSliceInterface{}
+    e.cmd = m.factory.TSMRevRange(m.ctx, fromTimestamp, toTimestamp, filterExpr)
+    m.pushExpect(e)
+    return e
+}
+
+func (m *mock) ExpectTSMRevRangeWithArgs(fromTimestamp int, toTimestamp int, filterExpr []string, options *redis.TSMRevRangeOptions) *ExpectedMapStringSliceInterface {
+    e := &ExpectedMapStringSliceInterface{}
+    e.cmd = m.factory.TSMRevRangeWithArgs(m.ctx, fromTimestamp, toTimestamp, filterExpr, options)
+    m.pushExpect(e)
+    return e
+}
+
+func (m *mock) ExpectTSMGet(filters []string) *ExpectedMapStringSliceInterface {
+    e := &ExpectedMapStringSliceInterface{}
+    e.cmd = m.factory.TSMGet(m.ctx, filters)
+    m.pushExpect(e)
+    return e
+}
+
+func (m *mock) ExpectTSMGetWithArgs(filters []string, options *redis.TSMGetOptions) *ExpectedMapStringSliceInterface {
+    e := &ExpectedMapStringSliceInterface{}
+    e.cmd = m.factory.TSMGetWithArgs(m.ctx, filters, options)
+    m.pushExpect(e)
+    return e
+}

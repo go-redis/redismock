@@ -1653,3 +1653,135 @@ func operationClusterShardsCmd(base baseMock, expected func() *ExpectedClusterSh
 	Expect(err).NotTo(HaveOccurred())
 	Expect(val).To(Equal(cs))
 }
+
+func operationTSTimestampValueCmd(base baseMock, expected func() *ExpectedTSTimestampValue, actual func() *redis.TSTimestampValueCmd) {
+	var (
+		setErr = errors.New("ts timestamp value cmd error")
+		val    redis.TSTimestampValue
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal(redis.TSTimestampValue{}))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal(redis.TSTimestampValue{}))
+
+	tsv := redis.TSTimestampValue{
+		Timestamp: 1000,
+		Value:     1,
+	}
+
+	base.ClearExpect()
+	expected().SetVal(tsv)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(tsv))
+}
+
+func operationMapStringInterfaceCmd(base baseMock, expected func() *ExpectedMapStringInterface, actual func() *redis.MapStringInterfaceCmd) {
+	var (
+		setErr = errors.New("map string interface cmd error")
+		val    map[string]interface{}
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal(map[string]interface{}(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal(map[string]interface{}(nil)))
+
+	base.ClearExpect()
+	expected().SetVal(map[string]interface{}{
+		"key1": "val1",
+		"key2": 2,
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(map[string]interface{}{
+		"key1": "val1",
+		"key2": 2,
+	}))
+}
+
+func operationTSTimestampValueSliceCmd(base baseMock, expected func() *ExpectedTSTimestampValueSlice, actual func() *redis.TSTimestampValueSliceCmd) {
+	var (
+		setErr = errors.New("ts timestamp value slice cmd error")
+		val    []redis.TSTimestampValue
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal([]redis.TSTimestampValue(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal([]redis.TSTimestampValue(nil)))
+
+	tsv := []redis.TSTimestampValue{
+		{
+			Timestamp: 1000,
+			Value:     1,
+		},
+		{
+			Timestamp: 2000,
+			Value:     2,
+		},
+	}
+
+	base.ClearExpect()
+	expected().SetVal(tsv)
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(tsv))
+}
+
+func operationMapStringSliceInterfaceCmd(base baseMock, expected func() *ExpectedMapStringSliceInterface, actual func() *redis.MapStringSliceInterfaceCmd) {
+	var (
+		setErr = errors.New("map string slice interface cmd error")
+		val    map[string][]interface{}
+		err    error
+	)
+
+	base.ClearExpect()
+	expected().SetErr(setErr)
+	val, err = actual().Result()
+	Expect(err).To(Equal(setErr))
+	Expect(val).To(Equal(map[string][]interface{}(nil)))
+
+	base.ClearExpect()
+	expected()
+	val, err = actual().Result()
+	Expect(err).To(HaveOccurred())
+	Expect(val).To(Equal(map[string][]interface{}(nil)))
+
+	base.ClearExpect()
+	expected().SetVal(map[string][]interface{}{
+		"key1": {"val1", 1},
+		"key2": {"val2", 2},
+	})
+	val, err = actual().Result()
+	Expect(err).NotTo(HaveOccurred())
+	Expect(val).To(Equal(map[string][]interface{}{
+		"key1": {"val1", 1},
+		"key2": {"val2", 2},
+	}))
+}

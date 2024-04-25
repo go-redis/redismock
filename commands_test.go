@@ -3135,6 +3135,310 @@ var _ = Describe("Commands", func() {
 				return client.ACLDryRun(ctx, "default", "get", "key")
 			})
 		})
+
+		// ------------------------------------------------------------------
+
+		It("TSAdd", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectTSAdd("key", 1, 2.0)
+			}, func() *redis.IntCmd {
+				return client.TSAdd(ctx, "key", 1, 2.0)
+			})
+		})
+
+		It("TSAddWithArgs", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectTSAddWithArgs("key", 1, 2.0, &redis.TSOptions{
+					Retention: 1,
+					ChunkSize: 1000,
+				})
+			}, func() *redis.IntCmd {
+				return client.TSAddWithArgs(ctx, "key", 1, 2.0, &redis.TSOptions{
+					Retention: 1,
+					ChunkSize: 1000,
+				})
+			})
+		})
+
+		It("TSCreate", func() {
+			operationStatusCmd(clientMock, func() *ExpectedStatus {
+				return clientMock.ExpectTSCreate("key")
+			}, func() *redis.StatusCmd {
+				return client.TSCreate(ctx, "key")
+			})
+		})
+
+		It("TSCreateWithArgs", func() {
+			operationStatusCmd(clientMock, func() *ExpectedStatus {
+				return clientMock.ExpectTSCreateWithArgs("key", &redis.TSOptions{
+					Retention: 1,
+					ChunkSize: 1000,
+				})
+			}, func() *redis.StatusCmd {
+				return client.TSCreateWithArgs(ctx, "key", &redis.TSOptions{
+					Retention: 1,
+					ChunkSize: 1000,
+				})
+			})
+		})
+
+		It("TSAlter", func() {
+			operationStatusCmd(clientMock, func() *ExpectedStatus {
+				return clientMock.ExpectTSAlter("key", &redis.TSAlterOptions{
+					Retention: 1,
+					ChunkSize: 1000,
+				})
+			}, func() *redis.StatusCmd {
+				return client.TSAlter(ctx, "key", &redis.TSAlterOptions{
+					Retention: 1,
+					ChunkSize: 1000,
+				})
+			})
+		})
+
+		It("TSCreateRule", func() {
+			operationStatusCmd(clientMock, func() *ExpectedStatus {
+				return clientMock.ExpectTSCreateRule("sourceKey", "destKey", redis.Aggregator(1), 60)
+			}, func() *redis.StatusCmd {
+				return client.TSCreateRule(ctx, "sourceKey", "destKey", redis.Aggregator(1), 60)
+			})
+		})
+
+		It("TSCreateRuleWithArgs", func() {
+			operationStatusCmd(clientMock, func() *ExpectedStatus {
+				return clientMock.ExpectTSCreateRuleWithArgs("sourceKey", "destKey", redis.Aggregator(1), 60, &redis.TSCreateRuleOptions{})
+			}, func() *redis.StatusCmd {
+				return client.TSCreateRuleWithArgs(ctx, "sourceKey", "destKey", redis.Aggregator(1), 60, &redis.TSCreateRuleOptions{})
+			})
+		})
+
+		It("TSIncrBy", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectTSIncrBy("key", 2.0)
+			}, func() *redis.IntCmd {
+				return client.TSIncrBy(ctx, "key", 2.0)
+			})
+		})
+
+		It("TSIncrByWithArgs", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectTSIncrByWithArgs("key", 2.0, &redis.TSIncrDecrOptions{
+					Retention: 1,
+					ChunkSize: 1000,
+				})
+			}, func() *redis.IntCmd {
+				return client.TSIncrByWithArgs(ctx, "key", 2.0, &redis.TSIncrDecrOptions{
+					Retention: 1,
+					ChunkSize: 1000,
+				})
+			})
+		})
+
+		It("DecrBy", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectTSDecrBy("key", 2.0)
+			}, func() *redis.IntCmd {
+				return client.TSDecrBy(ctx, "key", 2.0)
+			})
+		})
+
+		It("TSDecrByWithArgs", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectTSDecrByWithArgs("key", 2.0, &redis.TSIncrDecrOptions{
+					Retention: 1,
+					ChunkSize: 1000,
+				})
+			}, func() *redis.IntCmd {
+				return client.TSDecrByWithArgs(ctx, "key", 2.0, &redis.TSIncrDecrOptions{
+					Retention: 1,
+					ChunkSize: 1000,
+				})
+			})
+		})
+
+		It("TSDel", func() {
+			operationIntCmd(clientMock, func() *ExpectedInt {
+				return clientMock.ExpectTSDel("key", 0, 1)
+			}, func() *redis.IntCmd {
+				return client.TSDel(ctx, "key", 0, 1)
+			})
+		})
+
+		It("TSDeleteRule", func() {
+			operationStatusCmd(clientMock, func() *ExpectedStatus {
+				return clientMock.ExpectTSDeleteRule("sourceKey", "destKey")
+			}, func() *redis.StatusCmd {
+				return client.TSDeleteRule(ctx, "sourceKey", "destKey")
+			})
+		})
+
+		It("TSGet", func() {
+			operationTSTimestampValueCmd(clientMock, func() *ExpectedTSTimestampValue {
+				return clientMock.ExpectTSGet("key")
+			}, func() *redis.TSTimestampValueCmd {
+				return client.TSGet(ctx, "key")
+			})
+		})
+
+		It("TSGetWithArgs", func() {
+			operationTSTimestampValueCmd(clientMock, func() *ExpectedTSTimestampValue {
+				return clientMock.ExpectTSGetWithArgs("key", &redis.TSGetOptions{
+					Latest: true,
+				})
+			}, func() *redis.TSTimestampValueCmd {
+				return client.TSGetWithArgs(ctx, "key", &redis.TSGetOptions{
+					Latest: true,
+				})
+			})
+		})
+
+		It("TSInfo", func() {
+			operationMapStringInterfaceCmd(clientMock, func() *ExpectedMapStringInterface {
+				return clientMock.ExpectTSInfo("key")
+			}, func() *redis.MapStringInterfaceCmd {
+				return client.TSInfo(ctx, "key")
+			})
+		})
+
+		It("TSInfoWithArgs", func() {
+			operationMapStringInterfaceCmd(clientMock, func() *ExpectedMapStringInterface {
+				return clientMock.ExpectTSInfoWithArgs("key", &redis.TSInfoOptions{
+					Debug: true,
+				})
+			}, func() *redis.MapStringInterfaceCmd {
+				return client.TSInfoWithArgs(ctx, "key", &redis.TSInfoOptions{
+					Debug: true,
+				})
+			})
+		})
+
+		It("TSMAdd", func() {
+			operationIntSliceCmd(clientMock, func() *ExpectedIntSlice {
+				return clientMock.ExpectTSMAdd([][]interface{}{{"key", 1, "value"}})
+			}, func() *redis.IntSliceCmd {
+				return client.TSMAdd(ctx, [][]interface{}{{"key", 1, "value"}})
+			})
+		})
+
+		It("TSQueryIndex", func() {
+			operationStringSliceCmd(clientMock, func() *ExpectedStringSlice {
+				return clientMock.ExpectTSQueryIndex([]string{"filterExpr"})
+			}, func() *redis.StringSliceCmd {
+				return client.TSQueryIndex(ctx, []string{"filterExpr"})
+			})
+		})
+
+		It("TSRevRange", func() {
+			operationTSTimestampValueSliceCmd(clientMock, func() *ExpectedTSTimestampValueSlice {
+				return clientMock.ExpectTSRevRange("key", 1, 2)
+			}, func() *redis.TSTimestampValueSliceCmd {
+				return client.TSRevRange(ctx, "key", 1, 2)
+			})
+		})
+
+		It("TSRevRangeWithArgs", func() {
+			operationTSTimestampValueSliceCmd(clientMock, func() *ExpectedTSTimestampValueSlice {
+				return clientMock.ExpectTSRevRangeWithArgs("key", 1, 2, &redis.TSRevRangeOptions{
+					Latest: true,
+					Count:  10,
+				})
+			}, func() *redis.TSTimestampValueSliceCmd {
+				return client.TSRevRangeWithArgs(ctx, "key", 1, 2, &redis.TSRevRangeOptions{
+					Latest: true,
+					Count:  10,
+				})
+			})
+		})
+
+		It("TSRange", func() {
+			operationTSTimestampValueSliceCmd(clientMock, func() *ExpectedTSTimestampValueSlice {
+				return clientMock.ExpectTSRange("key", 1, 2)
+			}, func() *redis.TSTimestampValueSliceCmd {
+				return client.TSRange(ctx, "key", 1, 2)
+			})
+		})
+
+		It("TSRangeWithArgs", func() {
+			operationTSTimestampValueSliceCmd(clientMock, func() *ExpectedTSTimestampValueSlice {
+				return clientMock.ExpectTSRangeWithArgs("key", 1, 2, &redis.TSRangeOptions{
+					Latest: true,
+					Count:  10,
+				})
+			}, func() *redis.TSTimestampValueSliceCmd {
+				return client.TSRangeWithArgs(ctx, "key", 1, 2, &redis.TSRangeOptions{
+					Latest: true,
+					Count:  10,
+				})
+			})
+		})
+
+		It("TSMRange", func() {
+			operationMapStringSliceInterfaceCmd(clientMock, func() *ExpectedMapStringSliceInterface {
+				return clientMock.ExpectTSMRange(1, 2, []string{"filterExpr"})
+			}, func() *redis.MapStringSliceInterfaceCmd {
+				return client.TSMRange(ctx, 1, 2, []string{"filterExpr"})
+			})
+		})
+
+		It("TSMRangeWithArgs", func() {
+			operationMapStringSliceInterfaceCmd(clientMock, func() *ExpectedMapStringSliceInterface {
+				return clientMock.ExpectTSMRangeWithArgs(1, 2, []string{"filterExpr"}, &redis.TSMRangeOptions{
+					Latest: true,
+					Count:  10,
+				})
+			}, func() *redis.MapStringSliceInterfaceCmd {
+				return client.TSMRangeWithArgs(ctx, 1, 2, []string{"filterExpr"}, &redis.TSMRangeOptions{
+					Latest: true,
+					Count:  10,
+				})
+			})
+		})
+
+		It("TSMRevRange", func() {
+			operationMapStringSliceInterfaceCmd(clientMock, func() *ExpectedMapStringSliceInterface {
+				return clientMock.ExpectTSMRevRange(1, 2, []string{"filterExpr"})
+			}, func() *redis.MapStringSliceInterfaceCmd {
+				return client.TSMRevRange(ctx, 1, 2, []string{"filterExpr"})
+			})
+		})
+
+		It("TSMRevRangeWithArgs", func() {
+			operationMapStringSliceInterfaceCmd(clientMock, func() *ExpectedMapStringSliceInterface {
+				return clientMock.ExpectTSMRevRangeWithArgs(1, 2, []string{"filterExpr"}, &redis.TSMRevRangeOptions{
+					Latest: true,
+					Count:  10,
+				})
+			}, func() *redis.MapStringSliceInterfaceCmd {
+				return client.TSMRevRangeWithArgs(ctx, 1, 2, []string{"filterExpr"}, &redis.TSMRevRangeOptions{
+					Latest: true,
+					Count:  10,
+				})
+			})
+		})
+
+		It("TSMGet", func() {
+			operationMapStringSliceInterfaceCmd(clientMock, func() *ExpectedMapStringSliceInterface {
+				return clientMock.ExpectTSMGet([]string{"filter"})
+			}, func() *redis.MapStringSliceInterfaceCmd {
+				return client.TSMGet(ctx, []string{"filter"})
+			})
+		})
+
+		It("TSMGetWithArgs", func() {
+			operationMapStringSliceInterfaceCmd(clientMock, func() *ExpectedMapStringSliceInterface {
+				return clientMock.ExpectTSMGetWithArgs([]string{"filter"}, &redis.TSMGetOptions{
+					Latest: true,
+					WithLabels: true,
+					SelectedLabels: []interface{}{"label1", "label2", 100},
+				})
+			}, func() *redis.MapStringSliceInterfaceCmd {
+				return client.TSMGetWithArgs(ctx, []string{"filter"}, &redis.TSMGetOptions{
+					Latest: true,
+					WithLabels: true,
+					SelectedLabels: []interface{}{"label1", "label2", 100},
+				})
+			})
+		})
 	}
 
 	Describe("client", func() {
