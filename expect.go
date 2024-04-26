@@ -360,6 +360,36 @@ type baseMock interface {
 	ExpectFCallRo(function string, keys []string, args ...interface{}) *ExpectedCmd
 
 	ExpectACLDryRun(username string, command ...interface{}) *ExpectedString
+
+	ExpectTSAdd(key string, timestamp interface{}, value float64) *ExpectedInt
+	ExpectTSAddWithArgs(key string, timestamp interface{}, value float64, options *redis.TSOptions) *ExpectedInt
+	ExpectTSCreate(key string) *ExpectedStatus
+	ExpectTSCreateWithArgs(key string, options *redis.TSOptions) *ExpectedStatus
+	ExpectTSAlter(key string, options *redis.TSAlterOptions) *ExpectedStatus
+	ExpectTSCreateRule(sourceKey string, destKey string, aggregator redis.Aggregator, bucketDuration int) *ExpectedStatus
+	ExpectTSCreateRuleWithArgs(sourceKey string, destKey string, aggregator redis.Aggregator, bucketDuration int, options *redis.TSCreateRuleOptions) *ExpectedStatus
+	ExpectTSIncrBy(Key string, timestamp float64) *ExpectedInt
+	ExpectTSIncrByWithArgs(key string, timestamp float64, options *redis.TSIncrDecrOptions) *ExpectedInt
+	ExpectTSDecrBy(Key string, timestamp float64) *ExpectedInt
+	ExpectTSDecrByWithArgs(key string, timestamp float64, options *redis.TSIncrDecrOptions) *ExpectedInt
+	ExpectTSDel(Key string, fromTimestamp int, toTimestamp int) *ExpectedInt
+	ExpectTSDeleteRule(sourceKey string, destKey string) *ExpectedStatus
+	ExpectTSGet(key string) *ExpectedTSTimestampValue
+	ExpectTSGetWithArgs(key string, options *redis.TSGetOptions) *ExpectedTSTimestampValue
+	ExpectTSInfo(key string) *ExpectedMapStringInterface
+	ExpectTSInfoWithArgs(key string, options *redis.TSInfoOptions) *ExpectedMapStringInterface
+	ExpectTSMAdd(ktvSlices [][]interface{}) *ExpectedIntSlice
+	ExpectTSQueryIndex(filterExpr []string) *ExpectedStringSlice
+	ExpectTSRevRange(key string, fromTimestamp int, toTimestamp int) *ExpectedTSTimestampValueSlice
+	ExpectTSRevRangeWithArgs(key string, fromTimestamp int, toTimestamp int, options *redis.TSRevRangeOptions) *ExpectedTSTimestampValueSlice
+	ExpectTSRange(key string, fromTimestamp int, toTimestamp int) *ExpectedTSTimestampValueSlice
+	ExpectTSRangeWithArgs(key string, fromTimestamp int, toTimestamp int, options *redis.TSRangeOptions) *ExpectedTSTimestampValueSlice
+	ExpectTSMRange(fromTimestamp int, toTimestamp int, filterExpr []string) *ExpectedMapStringSliceInterface
+	ExpectTSMRangeWithArgs(fromTimestamp int, toTimestamp int, filterExpr []string, options *redis.TSMRangeOptions) *ExpectedMapStringSliceInterface
+	ExpectTSMRevRange(fromTimestamp int, toTimestamp int, filterExpr []string) *ExpectedMapStringSliceInterface
+	ExpectTSMRevRangeWithArgs(fromTimestamp int, toTimestamp int, filterExpr []string, options *redis.TSMRevRangeOptions) *ExpectedMapStringSliceInterface
+	ExpectTSMGet(filters []string) *ExpectedMapStringSliceInterface
+	ExpectTSMGetWithArgs(filters []string, options *redis.TSMGetOptions) *ExpectedMapStringSliceInterface
 }
 
 type pipelineMock interface {
@@ -1281,6 +1311,82 @@ func (cmd *ExpectedClusterShards) SetVal(val []redis.ClusterShard) {
 }
 
 func (cmd *ExpectedClusterShards) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedTSTimestampValue struct {
+	expectedBase
+
+	val redis.TSTimestampValue
+}
+
+func (cmd *ExpectedTSTimestampValue) SetVal(val redis.TSTimestampValue) {
+	cmd.setVal = true
+	cmd.val = val
+}
+
+func (cmd *ExpectedTSTimestampValue) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedMapStringInterface struct {
+	expectedBase
+
+	val map[string]interface{}
+}
+
+func (cmd *ExpectedMapStringInterface) SetVal(val map[string]interface{}) {
+	cmd.setVal = true
+	cmd.val = make(map[string]interface{})
+	for k, v := range val {
+		cmd.val[k] = v
+	}
+}
+
+func (cmd *ExpectedMapStringInterface) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedTSTimestampValueSlice struct {
+	expectedBase
+
+	val []redis.TSTimestampValue
+}
+
+func (cmd *ExpectedTSTimestampValueSlice) SetVal(val []redis.TSTimestampValue) {
+	cmd.setVal = true
+	cmd.val = make([]redis.TSTimestampValue, len(val))
+	copy(cmd.val, val)
+}
+
+func (cmd *ExpectedTSTimestampValueSlice) inflow(c redis.Cmder) {
+	inflow(c, "val", cmd.val)
+}
+
+// ------------------------------------------------------------
+
+type ExpectedMapStringSliceInterface struct {
+	expectedBase
+
+	val map[string][]interface{}
+}
+
+func (cmd *ExpectedMapStringSliceInterface) SetVal(val map[string][]interface{}) {
+	cmd.setVal = true
+	cmd.val = make(map[string][]interface{})
+	for k, v := range val {
+		cmd.val[k] = make([]interface{}, len(v))
+		copy(cmd.val[k], v)
+	}
+}
+
+func (cmd *ExpectedMapStringSliceInterface) inflow(c redis.Cmder) {
 	inflow(c, "val", cmd.val)
 }
 
