@@ -113,7 +113,7 @@ func (h redisClientHook) ProcessPipelineHook(_ redis.ProcessPipelineHook) redis.
 				err = h.returnErr
 			}
 			if err != nil {
-				return err
+				cmd.SetErr(err)
 			}
 		}
 		return nil
