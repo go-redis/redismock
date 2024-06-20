@@ -47,12 +47,17 @@ func NewClientMock() (*redis.Client, ClientMock) {
 	return m.client.(*redis.Client), m
 }
 
+func NewClientMockWithHooks(hooks ...redis.Hook) (*redis.Client, ClientMock) {
+	m := newMock(redisClient, hooks...)
+	return m.client.(*redis.Client), m
+}
+
 func NewClusterMock() (*redis.ClusterClient, ClusterClientMock) {
 	m := newMock(redisCluster)
 	return m.client.(*redis.ClusterClient), m
 }
 
-func newMock(typ redisClientType) *mock {
+func newMock(typ redisClientType, hooks ...redis.Hook) *mock {
 	m := &mock{
 		ctx:        context.Background(),
 		clientType: typ,
@@ -65,6 +70,9 @@ func newMock(typ redisClientType) *mock {
 		factory := redis.NewClient(opt)
 		client := redis.NewClient(opt)
 		factory.AddHook(nilHook{})
+		for i := range hooks {
+			client.AddHook(hooks[i])
+		}
 		client.AddHook(redisClientHook{fn: m.process})
 
 		m.factory = factory
@@ -269,13 +277,20 @@ func (m *mock) match(expect expectation, cmd redis.Cmder) error {
 func (m *mock) compare(isRegexp bool, expect, cmd interface{}) error {
 	expr, ok := expect.(string)
 	if isRegexp && ok {
-		cmdValue := fmt.Sprint(cmd)
+		var cmdValue1 string
+		var cmdValue2 string
+		if bCmd, ok := cmd.([]byte); ok {
+			cmdValue1 = string(bCmd)
+			cmdValue2 = fmt.Sprint(cmd)
+		} else {
+			cmdValue1 = fmt.Sprint(cmd)
+		}
 		re, err := regexp.Compile(expr)
 		if err != nil {
 			return err
 		}
-		if !re.MatchString(cmdValue) {
-			return fmt.Errorf("args not match, expectation regular: '%s', but gave: '%s'", expr, cmdValue)
+		if !re.MatchString(cmdValue1) && !re.MatchString(cmdValue2) {
+			return fmt.Errorf("args not match, expectation regular: '%s', but gave: '%s', and: '%s", expr, cmdValue1, cmdValue2)
 		}
 	} else if !reflect.DeepEqual(expect, cmd) {
 		return fmt.Errorf("args not `DeepEqual`, expectation: '%+v', but gave: '%+v'", expect, cmd)
@@ -780,6 +795,13 @@ func (m *mock) ExpectGet(key string) *ExpectedString {
 	return e
 }
 
+func (m *mock) ExpectGetDel(key string) *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = m.factory.GetDel(m.ctx, key)
+	m.pushExpect(e)
+	return e
+}
+
 func (m *mock) ExpectGetRange(key string, start, end int64) *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.GetRange(m.ctx, key, start, end)
@@ -797,13 +819,6 @@ func (m *mock) ExpectGetSet(key string, value interface{}) *ExpectedString {
 func (m *mock) ExpectGetEx(key string, expiration time.Duration) *ExpectedString {
 	e := &ExpectedString{}
 	e.cmd = m.factory.GetEx(m.ctx, key, expiration)
-	m.pushExpect(e)
-	return e
-}
-
-func (m *mock) ExpectGetDel(key string) *ExpectedString {
-	e := &ExpectedString{}
-	e.cmd = m.factory.GetDel(m.ctx, key)
 	m.pushExpect(e)
 	return e
 }
