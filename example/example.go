@@ -3,6 +3,7 @@ package example
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/go-redis/redismock/v9"
@@ -65,6 +66,14 @@ func example() {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		//error
 		panic(err)
+	}
+
+	//--------
+
+	//unexpected redis commands have been called
+	//returns true and the unexpected calls
+	if unexpected, calls := mock.UnexpectedCallsWereCalled(); unexpected {
+		log.Printf("Unexpected calls: %+v", calls)
 	}
 
 	//---------
