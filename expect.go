@@ -24,6 +24,10 @@ type baseMock interface {
 	// were met in order. If any of them was not met - an error is returned.
 	ExpectationsWereMet() error
 
+	// UnexpectedCallsWereCalled returns any unexpected calls which were made.
+	// If any unexpected call was made, a list of unexpected call redis.Cmder is returned.
+	UnexpectedCallsWereCalled() (bool, []redis.Cmder)
+
 	// MatchExpectationsInOrder gives an option whether to match all expectations in the order they were set or not.
 	MatchExpectationsInOrder(b bool)
 
