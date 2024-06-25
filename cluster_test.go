@@ -50,7 +50,7 @@ var _ = Describe("Cluster", func() {
 			Expect(getSet.Err()).NotTo(HaveOccurred())
 			Expect(getSet.Val()).To(Equal("1"))
 
-			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeFalse())
 			Expect(unexpectedCalls).To(BeNil())
 		})
@@ -67,7 +67,7 @@ var _ = Describe("Cluster", func() {
 			_ = client.Get(ctx, "key")
 			Expect(clusterMock.ExpectationsWereMet()).To(HaveOccurred())
 
-			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeFalse())
 			Expect(unexpectedCalls).To(BeNil())
 
@@ -85,7 +85,7 @@ var _ = Describe("Cluster", func() {
 			Expect(get.Err()).To(HaveOccurred())
 			Expect(get.Val()).To(Equal(""))
 
-			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeTrue())
 			Expect(unexpectedCalls).NotTo(BeNil())
 		})
@@ -102,7 +102,7 @@ var _ = Describe("Cluster", func() {
 		})
 
 		AfterEach(func() {
-			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeFalse())
 			Expect(unexpectedCalls).To(BeNil())
 		})
@@ -125,7 +125,7 @@ var _ = Describe("Cluster", func() {
 	Describe("work other match", func() {
 
 		AfterEach(func() {
-			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeFalse())
 			Expect(unexpectedCalls).To(BeNil())
 		})
@@ -174,7 +174,7 @@ var _ = Describe("Cluster", func() {
 	Describe("work error", func() {
 
 		AfterEach(func() {
-			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeFalse())
 			Expect(unexpectedCalls).To(BeNil())
 		})

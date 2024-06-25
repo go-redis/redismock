@@ -39,7 +39,7 @@ var _ = Describe("Client", func() {
 		})
 
 		AfterEach(func() {
-			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeFalse())
 			Expect(unexpectedCalls).To(BeNil())
 		})
@@ -95,7 +95,7 @@ var _ = Describe("Client", func() {
 		})
 
 		AfterEach(func() {
-			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeFalse())
 			Expect(unexpectedCalls).To(BeNil())
 		})
@@ -149,7 +149,7 @@ var _ = Describe("Client", func() {
 		})
 
 		AfterEach(func() {
-			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeTrue())
 			Expect(unexpectedCalls).ShouldNot(BeNil())
 		})
@@ -239,7 +239,7 @@ var _ = Describe("Client", func() {
 			Expect(getSet.Err()).NotTo(HaveOccurred())
 			Expect(getSet.Val()).To(Equal("1"))
 
-			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeFalse())
 			Expect(unexpectedCalls).To(BeNil())
 		})
@@ -256,7 +256,7 @@ var _ = Describe("Client", func() {
 			_ = client.Get(ctx, "key")
 			Expect(clientMock.ExpectationsWereMet()).To(HaveOccurred())
 
-			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeFalse())
 			Expect(unexpectedCalls).To(BeNil())
 
@@ -274,7 +274,7 @@ var _ = Describe("Client", func() {
 			Expect(get.Err()).To(HaveOccurred())
 			Expect(get.Val()).To(Equal(""))
 
-			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeTrue())
 			Expect(unexpectedCalls).NotTo(BeNil())
 		})
@@ -291,7 +291,7 @@ var _ = Describe("Client", func() {
 		})
 
 		AfterEach(func() {
-			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeFalse())
 			Expect(unexpectedCalls).To(BeNil())
 		})
@@ -314,7 +314,7 @@ var _ = Describe("Client", func() {
 	Describe("work other match", func() {
 
 		AfterEach(func() {
-			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeFalse())
 			Expect(unexpectedCalls).To(BeNil())
 		})
@@ -363,7 +363,7 @@ var _ = Describe("Client", func() {
 	Describe("work error", func() {
 
 		AfterEach(func() {
-			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereCalled()
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
 			Expect(hasUnexpectedCall).To(BeFalse())
 			Expect(unexpectedCalls).To(BeNil())
 		})
