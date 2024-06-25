@@ -23,9 +23,10 @@ type mock struct {
 
 	parent *mock
 
-	factory  mockCmdable
-	client   redis.Cmdable
-	expected []expectation
+	factory    mockCmdable
+	client     redis.Cmdable
+	expected   []expectation
+	unexpected []redis.Cmder
 
 	strictOrder bool
 
@@ -180,6 +181,7 @@ func (m *mock) process(cmd redis.Cmder) (err error) {
 		}
 		err = fmt.Errorf(msg, cmd.Args())
 		cmd.SetErr(err)
+		m.unexpected = append(m.unexpected, cmd)
 		return err
 	}
 
@@ -362,6 +364,7 @@ func (m *mock) ClearExpect() {
 		return
 	}
 	m.expected = nil
+	m.unexpected = nil
 }
 
 func (m *mock) Regexp() *mock {
@@ -400,6 +403,13 @@ func (m *mock) ExpectationsWereMet() error {
 		}
 	}
 	return nil
+}
+
+func (m *mock) UnexpectedCallsWereMade() (bool, []redis.Cmder) {
+	if m.parent != nil {
+		return m.parent.UnexpectedCallsWereMade()
+	}
+	return len(m.unexpected) > 0, m.unexpected
 }
 
 func (m *mock) MatchExpectationsInOrder(b bool) {
@@ -2862,29 +2872,29 @@ func (m *mock) ExpectTSMRangeWithArgs(fromTimestamp int, toTimestamp int, filter
 }
 
 func (m *mock) ExpectTSMRevRange(fromTimestamp int, toTimestamp int, filterExpr []string) *ExpectedMapStringSliceInterface {
-    e := &ExpectedMapStringSliceInterface{}
-    e.cmd = m.factory.TSMRevRange(m.ctx, fromTimestamp, toTimestamp, filterExpr)
-    m.pushExpect(e)
-    return e
+	e := &ExpectedMapStringSliceInterface{}
+	e.cmd = m.factory.TSMRevRange(m.ctx, fromTimestamp, toTimestamp, filterExpr)
+	m.pushExpect(e)
+	return e
 }
 
 func (m *mock) ExpectTSMRevRangeWithArgs(fromTimestamp int, toTimestamp int, filterExpr []string, options *redis.TSMRevRangeOptions) *ExpectedMapStringSliceInterface {
-    e := &ExpectedMapStringSliceInterface{}
-    e.cmd = m.factory.TSMRevRangeWithArgs(m.ctx, fromTimestamp, toTimestamp, filterExpr, options)
-    m.pushExpect(e)
-    return e
+	e := &ExpectedMapStringSliceInterface{}
+	e.cmd = m.factory.TSMRevRangeWithArgs(m.ctx, fromTimestamp, toTimestamp, filterExpr, options)
+	m.pushExpect(e)
+	return e
 }
 
 func (m *mock) ExpectTSMGet(filters []string) *ExpectedMapStringSliceInterface {
-    e := &ExpectedMapStringSliceInterface{}
-    e.cmd = m.factory.TSMGet(m.ctx, filters)
-    m.pushExpect(e)
-    return e
+	e := &ExpectedMapStringSliceInterface{}
+	e.cmd = m.factory.TSMGet(m.ctx, filters)
+	m.pushExpect(e)
+	return e
 }
 
 func (m *mock) ExpectTSMGetWithArgs(filters []string, options *redis.TSMGetOptions) *ExpectedMapStringSliceInterface {
-    e := &ExpectedMapStringSliceInterface{}
-    e.cmd = m.factory.TSMGetWithArgs(m.ctx, filters, options)
-    m.pushExpect(e)
-    return e
+	e := &ExpectedMapStringSliceInterface{}
+	e.cmd = m.factory.TSMGetWithArgs(m.ctx, filters, options)
+	m.pushExpect(e)
+	return e
 }
