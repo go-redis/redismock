@@ -1,4 +1,4 @@
-module github.com/go-redis/redismock/v9
+module github.com/antonyho/redismock
 
 go 1.18
 
