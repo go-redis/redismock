@@ -405,9 +405,9 @@ func (m *mock) ExpectationsWereMet() error {
 	return nil
 }
 
-func (m *mock) UnexpectedCallsWereCalled() (bool, []redis.Cmder) {
+func (m *mock) UnexpectedCallsWereMade() (bool, []redis.Cmder) {
 	if m.parent != nil {
-		return m.parent.UnexpectedCallsWereCalled()
+		return m.parent.UnexpectedCallsWereMade()
 	}
 	return len(m.unexpected) > 0, m.unexpected
 }
