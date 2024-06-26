@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/antonyho/redismock"
+	"github.com/lovoo/redismock"
 )
 
 var _ = example

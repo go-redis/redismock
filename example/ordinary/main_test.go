@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/antonyho/redismock"
+	"github.com/lovoo/redismock"
 )
 
 func TestItemCacheFail(t *testing.T) {

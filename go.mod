@@ -1,4 +1,4 @@
-module github.com/antonyho/redismock
+module github.com/lovoo/redismock
 
 go 1.18
 
