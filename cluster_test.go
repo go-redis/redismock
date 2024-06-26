@@ -49,6 +49,10 @@ var _ = Describe("Cluster", func() {
 			getSet := client.GetSet(ctx, "key", "0")
 			Expect(getSet.Err()).NotTo(HaveOccurred())
 			Expect(getSet.Val()).To(Equal("1"))
+
+			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeFalse())
+			Expect(unexpectedCalls).To(BeNil())
 		})
 
 		It("surplus", func() {
@@ -63,6 +67,10 @@ var _ = Describe("Cluster", func() {
 			_ = client.Get(ctx, "key")
 			Expect(clusterMock.ExpectationsWereMet()).To(HaveOccurred())
 
+			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeFalse())
+			Expect(unexpectedCalls).To(BeNil())
+
 			_ = client.GetSet(ctx, "key", "0")
 		})
 
@@ -76,6 +84,10 @@ var _ = Describe("Cluster", func() {
 			get := client.HGet(ctx, "key", "field")
 			Expect(get.Err()).To(HaveOccurred())
 			Expect(get.Val()).To(Equal(""))
+
+			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeTrue())
+			Expect(unexpectedCalls).NotTo(BeNil())
 		})
 	})
 
@@ -87,6 +99,12 @@ var _ = Describe("Cluster", func() {
 			clusterMock.ExpectSet("key", "1", 1*time.Second).SetVal("OK")
 			clusterMock.ExpectGet("key").SetVal("1")
 			clusterMock.ExpectGetSet("key", "0").SetVal("1")
+		})
+
+		AfterEach(func() {
+			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeFalse())
+			Expect(unexpectedCalls).To(BeNil())
 		})
 
 		It("ordinary", func() {
@@ -105,6 +123,12 @@ var _ = Describe("Cluster", func() {
 	})
 
 	Describe("work other match", func() {
+
+		AfterEach(func() {
+			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeFalse())
+			Expect(unexpectedCalls).To(BeNil())
+		})
 
 		It("regexp match", func() {
 			clusterMock.Regexp().ExpectSet("key", `^order_id_[0-9]{10}$`, 1*time.Second).SetVal("OK")
@@ -148,6 +172,12 @@ var _ = Describe("Cluster", func() {
 	})
 
 	Describe("work error", func() {
+
+		AfterEach(func() {
+			hasUnexpectedCall, unexpectedCalls := clusterMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeFalse())
+			Expect(unexpectedCalls).To(BeNil())
+		})
 
 		It("set error", func() {
 			clusterMock.ExpectGet("key").SetErr(errors.New("set error"))

@@ -38,6 +38,12 @@ var _ = Describe("Client", func() {
 			pipe = client.TxPipeline()
 		})
 
+		AfterEach(func() {
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeFalse())
+			Expect(unexpectedCalls).To(BeNil())
+		})
+
 		It("tx pipeline order", func() {
 			get := pipe.Get(ctx, "key1")
 			hashGet := pipe.HGet(ctx, "hash_key", "hash_field")
@@ -88,6 +94,12 @@ var _ = Describe("Client", func() {
 			pipe = client.Pipeline()
 		})
 
+		AfterEach(func() {
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeFalse())
+			Expect(unexpectedCalls).To(BeNil())
+		})
+
 		It("pipeline order", func() {
 			clientMock.MatchExpectationsInOrder(true)
 
@@ -134,6 +146,12 @@ var _ = Describe("Client", func() {
 			clientMock.ExpectWatch("key1", "key2")
 			clientMock.ExpectGet("key1").SetVal("1")
 			clientMock.ExpectSet("key2", "2", 1*time.Second).SetVal("OK")
+		})
+
+		AfterEach(func() {
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeTrue())
+			Expect(unexpectedCalls).ShouldNot(BeNil())
 		})
 
 		It("watch error", func() {
@@ -220,6 +238,10 @@ var _ = Describe("Client", func() {
 			getSet := client.GetSet(ctx, "key", "0")
 			Expect(getSet.Err()).NotTo(HaveOccurred())
 			Expect(getSet.Val()).To(Equal("1"))
+
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeFalse())
+			Expect(unexpectedCalls).To(BeNil())
 		})
 
 		It("surplus", func() {
@@ -234,6 +256,10 @@ var _ = Describe("Client", func() {
 			_ = client.Get(ctx, "key")
 			Expect(clientMock.ExpectationsWereMet()).To(HaveOccurred())
 
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeFalse())
+			Expect(unexpectedCalls).To(BeNil())
+
 			_ = client.GetSet(ctx, "key", "0")
 		})
 
@@ -247,6 +273,10 @@ var _ = Describe("Client", func() {
 			get := client.HGet(ctx, "key", "field")
 			Expect(get.Err()).To(HaveOccurred())
 			Expect(get.Val()).To(Equal(""))
+
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeTrue())
+			Expect(unexpectedCalls).NotTo(BeNil())
 		})
 	})
 
@@ -258,6 +288,12 @@ var _ = Describe("Client", func() {
 			clientMock.ExpectSet("key", "1", 1*time.Second).SetVal("OK")
 			clientMock.ExpectGet("key").SetVal("1")
 			clientMock.ExpectGetSet("key", "0").SetVal("1")
+		})
+
+		AfterEach(func() {
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeFalse())
+			Expect(unexpectedCalls).To(BeNil())
 		})
 
 		It("ordinary", func() {
@@ -276,6 +312,12 @@ var _ = Describe("Client", func() {
 	})
 
 	Describe("work other match", func() {
+
+		AfterEach(func() {
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeFalse())
+			Expect(unexpectedCalls).To(BeNil())
+		})
 
 		It("regexp match", func() {
 			clientMock.Regexp().ExpectSet("key", `^order_id_[0-9]{10}$`, 1*time.Second).SetVal("OK")
@@ -319,6 +361,12 @@ var _ = Describe("Client", func() {
 	})
 
 	Describe("work error", func() {
+
+		AfterEach(func() {
+			hasUnexpectedCall, unexpectedCalls := clientMock.UnexpectedCallsWereMade()
+			Expect(hasUnexpectedCall).To(BeFalse())
+			Expect(unexpectedCalls).To(BeNil())
+		})
 
 		It("set error", func() {
 			clientMock.ExpectGet("key").SetErr(errors.New("set error"))

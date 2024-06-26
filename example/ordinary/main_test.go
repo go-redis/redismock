@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/go-redis/redismock/v9"
+	"github.com/antonyho/redismock"
 )
 
 func TestItemCacheFail(t *testing.T) {
