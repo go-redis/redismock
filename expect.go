@@ -289,6 +289,7 @@ type baseMock interface {
 	ExpectInfo(section ...string) *ExpectedString
 	ExpectLastSave() *ExpectedInt
 	ExpectSave() *ExpectedStatus
+	ExpectSelect(index int) *ExpectedStatus
 	ExpectShutdown() *ExpectedStatus
 	ExpectShutdownSave() *ExpectedStatus
 	ExpectShutdownNoSave() *ExpectedStatus

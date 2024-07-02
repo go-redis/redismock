@@ -2469,6 +2469,16 @@ var _ = Describe("Commands", func() {
 			})
 		})
 
+		if c, ok := client.(*redis.Client); ok {
+			It("Save", func() {
+				operationStatusCmd(clientMock, func() *ExpectedStatus {
+					return clientMock.ExpectSelect(1)
+				}, func() *redis.StatusCmd {
+					return c.Conn().Select(ctx, 1)
+				})
+			})
+		}
+
 		It("Shutdown", func() {
 			//no test
 		})
