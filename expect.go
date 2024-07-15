@@ -32,6 +32,10 @@ type baseMock interface {
 	MatchExpectationsInOrder(b bool)
 
 	ExpectDo(args ...interface{}) *ExpectedCmd
+	ExpectIntSliceDo(args ...interface{}) *ExpectedIntSlice
+	ExpectIntDo(args ...interface{}) *ExpectedInt
+	ExpectStringSliceDo(args ...interface{}) *ExpectedStringSlice
+	ExpectStringDo(args ...interface{}) *ExpectedString
 	ExpectCommand() *ExpectedCommandsInfo
 	ExpectCommandList(filter *redis.FilterBy) *ExpectedStringSlice
 	ExpectCommandGetKeys(commands ...interface{}) *ExpectedStringSlice

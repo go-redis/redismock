@@ -463,7 +463,34 @@ func (m *mock) ExpectDo(args ...interface{}) *ExpectedCmd {
 	default:
 		panic("ExpectDo: unsupported client type")
 	}
+	m.pushExpect(e)
+	return e
+}
 
+func (m *mock) ExpectIntSliceDo(args ...interface{}) *ExpectedIntSlice {
+	e := &ExpectedIntSlice{}
+	e.cmd = redis.NewIntSliceCmd(m.ctx, args...)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectIntDo(args ...interface{}) *ExpectedInt {
+	e := &ExpectedInt{}
+	e.cmd = redis.NewIntCmd(m.ctx, args...)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectStringDo(args ...interface{}) *ExpectedString {
+	e := &ExpectedString{}
+	e.cmd = redis.NewStringCmd(m.ctx, args...)
+	m.pushExpect(e)
+	return e
+}
+
+func (m *mock) ExpectStringSliceDo(args ...interface{}) *ExpectedStringSlice {
+	e := &ExpectedStringSlice{}
+	e.cmd = redis.NewStringSliceCmd(m.ctx, args...)
 	m.pushExpect(e)
 	return e
 }
